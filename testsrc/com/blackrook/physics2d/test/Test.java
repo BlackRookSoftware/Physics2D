@@ -57,7 +57,7 @@ public class Test {
 		})
 	};
 		
-		cbSrc = new CollisionBody(shapes[0]);
+		cbSrc = new CollisionBody(shapes[3]);
 		cbTarg = new CollisionBody(shapes[3]);
 		
 		c2d = new Collision2D<CollisionBody>();

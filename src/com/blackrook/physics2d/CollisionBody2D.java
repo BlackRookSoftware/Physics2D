@@ -36,7 +36,7 @@ public interface CollisionBody2D extends SpatialHashable
 	 * <br>A mask of 0 is no type, and collides with nothing.
 	 * <p>This is one of the many ways to exclude an object from collision detection.
 	 */
-	public int getCollisionGroupMask();
+	public long getCollisionGroupMask();
 	
 	/**
 	 * Returns the target mask of this object (what can I collide with?).
@@ -49,7 +49,7 @@ public interface CollisionBody2D extends SpatialHashable
 	 * <br>A mask of 0 collides with nothing.
 	 * <p>This is one of the many ways to exclude an object from collision detection.
 	 */
-	public int getCollisionTargetMask();
+	public long getCollisionTargetMask();
 	
 	/**
 	 * Returns true if this object is to be excluded from collision detection entirely,
@@ -66,28 +66,28 @@ public interface CollisionBody2D extends SpatialHashable
 	 * is not always used - it is used if the object's useRadius() 
 	 * function returns true, which leaves it in the hands of the implementor.
 	 */
-	public float getCollisionSquaredRadius();
+	public double getCollisionSquaredRadius();
 	
 	/**
 	 * Gets the velocity of this body along the X-axis.
 	 * This also influences collision along separating axes and incident vectors.
 	 * @return the velocity in units along the X-axis.
 	 */
-	public float getCollisionVelocityX();
+	public double getCollisionVelocityX();
 
 	/**
 	 * Gets the velocity of this body along the Y-axis.
 	 * This also influences collision along separating axes and incident vectors.
 	 * @return the velocity in units along the Y-axis.
 	 */
-	public float getCollisionVelocityY();
+	public double getCollisionVelocityY();
 
 	/**
 	 * Gets the rotation of this body around the Z-axis.
 	 * This also influences collision along separating axes and incident vectors.
 	 * @return the rotation from the base positioning in degrees.
 	 */
-	public float getCollisionRotationZ();
+	public double getCollisionRotationZ();
 	
 }
 
