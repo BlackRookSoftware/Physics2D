@@ -15,7 +15,7 @@ import com.blackrook.commons.math.geometry.Vect2D;
  * on a collision between two bodies.
  * @author Matthew Tropiano
  */
-public class Collision2D<T extends CollisionBody2D>
+public class Collision2D<T>
 {
 	public static enum Method
 	{

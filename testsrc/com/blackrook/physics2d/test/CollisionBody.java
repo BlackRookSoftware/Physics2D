@@ -7,12 +7,11 @@
  ******************************************************************************/
 package com.blackrook.physics2d.test;
 
-import com.blackrook.physics2d.CollisionBody2D;
 import com.blackrook.physics2d.Shape2D;
 
-public class CollisionBody implements CollisionBody2D
+public class CollisionBody
 {
-	protected Shape2D shape;
+	public Shape2D shape;
 	public double x;
 	public double y;
 	public double vx;
@@ -24,26 +23,4 @@ public class CollisionBody implements CollisionBody2D
 		this.shape = shape;
 	}
 	
-	@Override public long getCollisionGroupMask()		{return -1;}
-	@Override public long getCollisionTargetMask()		{return -1;}
-	@Override public Shape2D getCollisionShape()		{return shape;}
-	@Override public double getCollisionSquaredRadius()	{return shape.getSquareRadius();}
-	@Override public double getCollisionVelocityX()		{return vx;}
-	@Override public double getCollisionVelocityY()		{return vy;}
-	@Override public double getCollisionRotationZ()		{return rotation;}
-
-	@Override public double getObjectRadius() 			{return shape.getRadius();}
-	@Override public boolean useObjectRadius() 			{return false;}
-	@Override public boolean isExcludedFromCollision()	{return false;}
-	@Override public double getObjectCenterX() 			{return x;}
-	@Override public double getObjectCenterY() 			{return y;}
-	@Override public double getObjectHalfWidth() 		{return shape.getHalfWidth();}
-	@Override public double getObjectHalfHeight() 		{return shape.getHalfHeight();}
-	@Override public double getObjectHalfDepth() 		{return 0;}
-	@Override public double getObjectCenterZ() 			{return 0;}
-	@Override public double getObjectSweepX()			{return -vx;}
-	@Override public double getObjectSweepY()			{return -vy;}
-	@Override public double getObjectSweepZ()			{return 0;}
-	@Override public String toString() 					{return shape.toString() + "@("+x+","+y+")";} 
-
 }

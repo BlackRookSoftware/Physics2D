@@ -14,10 +14,10 @@ package com.blackrook.physics2d;
 public interface Shape2D
 {
 	/** Returns the distance between the farthest point and the origin. */
-	public float getRadius();
+	public double getRadius();
 
 	/** Returns the square distance between the farthest point and the origin. */
-	public float getSquareRadius();
+	public double getSquareRadius();
 
 	/** 
 	 * Returns a hint to the broadphase detector if this shape 
@@ -29,11 +29,11 @@ public interface Shape2D
 	/** 
 	 * Returns the half width of this shape.
 	 */
-	public float getHalfWidth();
+	public double getHalfWidth();
 
 	/** 
 	 * Returns the half height of this shape.
 	 */
-	public float getHalfHeight();
+	public double getHalfHeight();
 
 }

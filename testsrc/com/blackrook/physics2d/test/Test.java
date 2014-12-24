@@ -21,12 +21,11 @@ import javax.swing.event.MouseInputListener;
 import com.blackrook.commons.math.RMath;
 import com.blackrook.commons.math.geometry.Line2D;
 import com.blackrook.commons.math.geometry.Point2D;
-import com.blackrook.commons.math.geometry.Point2F;
 import com.blackrook.commons.math.geometry.Vect2D;
 import com.blackrook.physics2d.Collision2D;
-import com.blackrook.physics2d.PhysicsUtils2D;
+import com.blackrook.physics2d.Physics2DUtils;
 import com.blackrook.physics2d.Shape2D;
-import com.blackrook.physics2d.shape2d.AABB;
+import com.blackrook.physics2d.shape2d.AABB2D;
 import com.blackrook.physics2d.shape2d.Circle;
 import com.blackrook.physics2d.shape2d.Polygon;
 
@@ -35,27 +34,29 @@ public class Test {
 	public static Collision2D<CollisionBody> c2d;
 	public static CollisionBody cbSrc;
 	public static CollisionBody cbTarg;
+	public static CollisionModel model = new CollisionModel(); 
+
 	
 	public static void main(String[] args)
 	{
 		Shape2D[] shapes = {
 			new Circle(50),
-			new AABB(50, 50),
-			new AABB(25, 25),
-			new Polygon(new Point2F[]{
-				new Point2F(-40,  15),
-				new Point2F(0,    40),
-				new Point2F(40,   15),
-				new Point2F(20,  -40),
-				new Point2F(-20, -40),
-		}),
-			new Polygon(new Point2F[]{
-				new Point2F(-20, 20),
-				new Point2F(20, 20),
-				new Point2F(20, -20),
-				new Point2F(-20, -20)
-		})
-	};
+			new AABB2D(50, 50),
+			new AABB2D(25, 25),
+			new Polygon(new Point2D[]{
+				new Point2D(-40,  15),
+				new Point2D(0,    40),
+				new Point2D(40,   15),
+				new Point2D(20,  -40),
+				new Point2D(-20, -40),
+			}),
+			new Polygon(new Point2D[]{
+				new Point2D(-20, 20),
+				new Point2D(20, 20),
+				new Point2D(20, -20),
+				new Point2D(-20, -20)
+			})
+		};
 		
 		cbSrc = new CollisionBody(shapes[3]);
 		cbTarg = new CollisionBody(shapes[3]);
@@ -86,8 +87,9 @@ public class Test {
 		Line2D proj;
 		Line2D proj2;
 		Vect2D normal;
-		Point2F tp1;
-		Point2F tp2;
+		Point2D tp1;
+		Point2D tp2;
+		Vect2D tv;
 		BufferedImage bi;
 		
 		TestCanvas(Collision2D<CollisionBody> c2d)
@@ -96,8 +98,9 @@ public class Test {
 			proj = new Line2D();
 			proj2 = new Line2D();
 			normal = new Vect2D();
-			tp1 = new Point2F();
-			tp2 = new Point2F();
+			tp1 = new Point2D();
+			tp2 = new Point2D();
+			tv = new Vect2D();
 			setPreferredSize(new Dimension(640,480));
 			addMouseMotionListener(this);
 			addMouseListener(this);
@@ -107,7 +110,7 @@ public class Test {
 		public void tc()
 		{
 			long n = System.nanoTime();
-			boolean b = PhysicsUtils2D.testCollision(cbSrc, cbTarg, c2d);
+			boolean b = Physics2DUtils.testCollision(model, cbSrc, cbTarg, c2d);
 			c2d.calcNanos = System.nanoTime() - n;
 			System.out.println(b+" "+"IV: "+c2d.incidentVector+" IP: "+c2d.incidentPoint+" "+c2d.method+" AXES: "+c2d.axisCount+" "+c2d.calcNanos+"ns");
 		}
@@ -128,12 +131,24 @@ public class Test {
 			g2d.fillRect(0, 0, getWidth(), getHeight());
 			g2d.scale(1, -1);
 			g2d.translate(0, -getHeight());
+			
+			Shape2D shape;
+			double rotationZ;
+			
+			shape = model.getObjectCollisionShape(c2d.source);
+			rotationZ = model.getObjectCollisionRotationZ(c2d.source);
+			model.getObjectCollisionCenter(c2d.source, tp1);
+			model.getObjectCollisionVelocity(c2d.source, tv);
 			g2d.setColor(Color.GREEN);
-			drawShape(g2d, c2d.source.getCollisionShape(), c2d.source.getObjectCenterX(), c2d.source.getObjectCenterY(), 
-					c2d.source.getCollisionVelocityX(), c2d.source.getCollisionVelocityY(), c2d.source.getCollisionRotationZ());
+			drawShape(g2d, shape, tp1.x, tp1.y, tv.x, tv.y, rotationZ);
+			
+			shape = model.getObjectCollisionShape(c2d.source);
+			rotationZ = model.getObjectCollisionRotationZ(c2d.source);
+			model.getObjectCollisionCenter(c2d.source, tp1);
+			model.getObjectCollisionVelocity(c2d.source, tv);
 			g2d.setColor(Color.RED);
-			drawShape(g2d, c2d.target.getCollisionShape(), c2d.target.getObjectCenterX(), c2d.target.getObjectCenterY(), 
-					c2d.target.getCollisionVelocityX(), c2d.target.getCollisionVelocityY(), c2d.target.getCollisionRotationZ());
+			drawShape(g2d, shape, tp1.x, tp1.y, tv.x, tv.y, rotationZ);
+			
 			g2d.setColor(Color.WHITE);
 			drawIncident(g2d, c2d);
 			g2d.setColor(Color.BLUE);
@@ -184,7 +199,7 @@ public class Test {
 				if (vx != 0.0 || vy != 0.0)
 					g2d.drawOval(ix-ir-ivx, iy-ir-ivy, ir*2, ir*2);
 			}
-			else if (s instanceof AABB)
+			else if (s instanceof AABB2D)
 			{
 				g2d.drawRect(ix-ihw, iy-ihh, ihw*2, ihh*2);
 				if (vx != 0.0 || vy != 0.0)
@@ -193,7 +208,7 @@ public class Test {
 			else if (s instanceof Polygon)
 			{
 				Polygon p = (Polygon)s;
-				Point2F[] pts = p.getPoints();
+				Point2D[] pts = p.getPoints();
 				for (int n = 0; n < pts.length; n++)
 				{
 					tp1.set(pts[n]);
@@ -230,19 +245,24 @@ public class Test {
 			normal.x = e.getX()-(getWidth()/2);
 			normal.y = -(e.getY()-(getHeight()/2));
 			normal.normalize();
-			if (c2d.source.getCollisionShape() instanceof Circle)
-				PhysicsUtils2D.projectCircle((Circle)c2d.source.getCollisionShape(), c2d.source, normal, proj);
-			else if (c2d.source.getCollisionShape() instanceof AABB)
-				PhysicsUtils2D.projectAABB((AABB)c2d.source.getCollisionShape(), c2d.source, normal, proj);
-			else if (c2d.source.getCollisionShape() instanceof Polygon)
-				PhysicsUtils2D.projectPolygon((Polygon)c2d.source.getCollisionShape(), c2d.source, normal, proj);
 			
-			if (c2d.target.getCollisionShape() instanceof Circle)
-				PhysicsUtils2D.projectCircle((Circle)c2d.target.getCollisionShape(), c2d.target, normal, proj2);
-			else if (c2d.target.getCollisionShape() instanceof AABB)
-				PhysicsUtils2D.projectAABB((AABB)c2d.target.getCollisionShape(), c2d.target, normal, proj2);
-			else if (c2d.target.getCollisionShape() instanceof Polygon)
-				PhysicsUtils2D.projectPolygon((Polygon)c2d.target.getCollisionShape(), c2d.target, normal, proj2);
+			Shape2D shape = model.getObjectCollisionShape(c2d.source);
+
+			if (shape instanceof Circle)
+				Physics2DUtils.projectCircle(model, (Circle)shape, c2d.source, normal, proj);
+			else if (shape instanceof AABB2D)
+				Physics2DUtils.projectAABB(model, (AABB2D)shape, c2d.source, normal, proj);
+			else if (shape instanceof Polygon)
+				Physics2DUtils.projectPolygon(model, (Polygon)shape, c2d.source, normal, proj);
+			
+			shape = model.getObjectCollisionShape(c2d.target);
+
+			if (shape instanceof Circle)
+				Physics2DUtils.projectCircle(model, (Circle)shape, c2d.target, normal, proj2);
+			else if (shape instanceof AABB2D)
+				Physics2DUtils.projectAABB(model, (AABB2D)shape, c2d.target, normal, proj2);
+			else if (shape instanceof Polygon)
+				Physics2DUtils.projectPolygon(model, (Polygon)shape, c2d.target, normal, proj2);
 			repaint();
 	}
 

@@ -28,13 +28,13 @@ public class Circle implements Shape2D
 	}
 	
 	@Override
-	public float getRadius()
+	public double getRadius()
 	{
 		return radius;
 	}
 
 	@Override
-	public float getSquareRadius()
+	public double getSquareRadius()
 	{
 		return radius * radius;
 	}
@@ -46,13 +46,13 @@ public class Circle implements Shape2D
 	}
 
 	@Override
-	public float getHalfHeight()
+	public double getHalfHeight()
 	{
 		return radius;
 	}
 
 	@Override
-	public float getHalfWidth()
+	public double getHalfWidth()
 	{
 		return radius;
 	}

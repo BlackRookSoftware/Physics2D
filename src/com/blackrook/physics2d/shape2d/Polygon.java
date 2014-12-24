@@ -9,8 +9,8 @@ package com.blackrook.physics2d.shape2d;
 
 import java.util.Arrays;
 
-import com.blackrook.commons.math.geometry.Point2F;
-import com.blackrook.commons.math.geometry.Vect2F;
+import com.blackrook.commons.math.geometry.Point2D;
+import com.blackrook.commons.math.geometry.Vect2D;
 import com.blackrook.physics2d.Shape2D;
 
 /**
@@ -22,40 +22,40 @@ import com.blackrook.physics2d.Shape2D;
 public class Polygon implements Shape2D
 {
 	/** This polygon's points, in a clockwise order. */
-	protected Point2F[] points;
+	protected Point2D[] points;
 
 	/** This polygon's normals, for separating axis tests. */
-	protected Vect2F[] normals;
+	protected Vect2D[] normals;
 	/** This polygon's center point. */
-	protected Point2F centerPoint;
+	protected Point2D centerPoint;
 	/** This polygon's radius (to furthest point). */
-	protected float squareRadius;
+	protected double squareRadius;
 	/** This polygon's half-width. */
-	protected float halfWidth;
+	protected double halfWidth;
 	/** This polygon's half-height. */
-	protected float halfHeight;
+	protected double halfHeight;
 	
 	/**
 	 * Creates a new Polygon.
 	 * The points are assumed to be in clockwise order, around the polygon.
 	 * @param pts the list of polygon points.
 	 */
-	public Polygon(Point2F ... pts)
+	public Polygon(Point2D ... pts)
 	{
-		points = new Point2F[pts.length];
-		normals = new Vect2F[pts.length];
-		centerPoint = new Point2F();
+		points = new Point2D[pts.length];
+		normals = new Vect2D[pts.length];
+		centerPoint = new Point2D();
 		squareRadius = 0.0f;
 		halfWidth = 0.0f;
 		halfHeight = 0.0f;
-		float minx = Float.MAX_VALUE;
-		float miny = Float.MAX_VALUE;
-		float maxx = -Float.MAX_VALUE;
-		float maxy = -Float.MAX_VALUE;
+		double minx = Float.MAX_VALUE;
+		double miny = Float.MAX_VALUE;
+		double maxx = -Float.MAX_VALUE;
+		double maxy = -Float.MAX_VALUE;
 		for (int i = 0; i < pts.length; i++)
 		{
-			points[i] = new Point2F(pts[i]);
-			normals[i] = new Vect2F(pts[i], pts[(i+1)%points.length]);
+			points[i] = new Point2D(pts[i]);
+			normals[i] = new Vect2D(pts[i], pts[(i+1)%points.length]);
 			normals[i].normalize();
 			normals[i].leftNormal();
 			squareRadius = Math.max(squareRadius, pts[i].squareLength());
@@ -72,25 +72,25 @@ public class Polygon implements Shape2D
 	}
 	
 	@Override
-	public float getHalfWidth()
+	public double getHalfWidth()
 	{
 		return halfWidth;
 	}
 
 	@Override
-	public float getHalfHeight()
+	public double getHalfHeight()
 	{
 		return halfHeight;
 	}
 
 	@Override
-	public float getRadius()
+	public double getRadius()
 	{
-		return (float)Math.sqrt(squareRadius);
+		return Math.sqrt(squareRadius);
 	}
 
 	@Override
-	public float getSquareRadius()
+	public double getSquareRadius()
 	{
 		return squareRadius;
 	}
@@ -104,7 +104,7 @@ public class Polygon implements Shape2D
 	/**
 	 * Returns this polygon's center point.
 	 */
-	public Point2F getCenterPoint()
+	public Point2D getCenterPoint()
 	{
 		return centerPoint;
 	}
@@ -112,7 +112,7 @@ public class Polygon implements Shape2D
 	/**
 	 * Returns this polygon's points.
 	 */
-	public Point2F[] getPoints()
+	public Point2D[] getPoints()
 	{
 		return points;
 	}
@@ -120,7 +120,7 @@ public class Polygon implements Shape2D
 	/**
 	 * Returns this polygon's normals (separating axes).
 	 */
-	public Vect2F[] getNormals()
+	public Vect2D[] getNormals()
 	{
 		return normals;
 	}
