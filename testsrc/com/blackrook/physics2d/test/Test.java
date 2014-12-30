@@ -18,6 +18,9 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.event.MouseInputListener;
 
+import com.blackrook.commons.logging.Logger;
+import com.blackrook.commons.logging.LoggingFactory;
+import com.blackrook.commons.logging.driver.ConsoleLogger;
 import com.blackrook.commons.math.RMath;
 import com.blackrook.commons.math.geometry.Line2D;
 import com.blackrook.commons.math.geometry.Point2D;
@@ -35,6 +38,7 @@ public class Test {
 	public static CollisionBody cbSrc;
 	public static CollisionBody cbTarg;
 	public static CollisionModel model = new CollisionModel(); 
+	static final Logger logger = (new LoggingFactory(new ConsoleLogger())).getLogger(Test.class);
 
 	
 	public static void main(String[] args)
@@ -58,8 +62,8 @@ public class Test {
 			})
 		};
 		
-		cbSrc = new CollisionBody(shapes[3]);
-		cbTarg = new CollisionBody(shapes[3]);
+		cbSrc = new CollisionBody(shapes[0]);
+		cbTarg = new CollisionBody(shapes[0]);
 		
 		c2d = new Collision2D<CollisionBody>();
 		c2d.source = cbSrc;
@@ -110,9 +114,9 @@ public class Test {
 		public void tc()
 		{
 			long n = System.nanoTime();
-			boolean b = Physics2DUtils.testCollision(model, cbSrc, cbTarg, c2d);
+			boolean b = Physics2DUtils.testCollision(model, c2d, cbSrc, cbTarg);
 			c2d.calcNanos = System.nanoTime() - n;
-			System.out.println(b+" "+"IV: "+c2d.incidentVector+" IP: "+c2d.incidentPoint+" "+c2d.method+" AXES: "+c2d.axisCount+" "+c2d.calcNanos+"ns");
+			logger.info(b+" "+"IV: "+c2d.incidentVector+" IP: "+c2d.incidentPoint+" "+c2d.method+" AXES: "+c2d.axisCount+" "+c2d.calcNanos+"ns");
 		}
 
 		public void update(Graphics g)
@@ -264,27 +268,27 @@ public class Test {
 			else if (shape instanceof Polygon)
 				Physics2DUtils.projectPolygon(model, (Polygon)shape, c2d.target, normal, proj2);
 			repaint();
-	}
+		}
 
 		@Override
 		public void mouseClicked(MouseEvent e){
-	}
+		}
 
 		@Override
 		public void mouseEntered(MouseEvent e) {
-	}
+		}
 
 		@Override
 		public void mouseExited(MouseEvent e) {
-	}
+		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {
-	}
+		}
 
 		@Override
 		public void mouseReleased(MouseEvent e) {
-	}
+		}
 		
 	}
 

@@ -18,6 +18,9 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.event.MouseInputListener;
 
+import com.blackrook.commons.logging.Logger;
+import com.blackrook.commons.logging.LoggingFactory;
+import com.blackrook.commons.logging.driver.ConsoleLogger;
 import com.blackrook.commons.math.RMath;
 import com.blackrook.commons.math.geometry.Line2D;
 import com.blackrook.commons.math.geometry.Point2D;
@@ -30,7 +33,8 @@ import com.blackrook.physics2d.shape2d.Polygon;
 
 public class ProjectionTest {
 
-	static final CollisionModel model = new CollisionModel(); 
+	static final CollisionModel model = new CollisionModel();
+	static final Logger logger = (new LoggingFactory(new ConsoleLogger())).getLogger(ProjectionTest.class);
 
 	public static void main(String[] args)
 	{
@@ -217,7 +221,7 @@ public class ProjectionTest {
 			else if (shape instanceof Polygon)
 				Physics2DUtils.projectPolygon(model, (Polygon)shape, body, normal, proj);
 			time = System.nanoTime() - time;
-			System.out.print(time + "ns ");
+			logger.info(time + "ns ");
 			
 			shape = model.getObjectCollisionShape(body2);
 
@@ -229,37 +233,37 @@ public class ProjectionTest {
 			else if (shape instanceof Polygon)
 				Physics2DUtils.projectPolygon(model, (Polygon)shape, body2, normal, proj2);
 			time = System.nanoTime() - time;
-			System.out.println(time + "ns");
+			logger.info(time + "ns ");
 			
 			repaint();
-	}
+		}
 
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			body.x = e.getX()-(getWidth()/2);
 			body.y = -(e.getY()-(getHeight()/2));
 			repaint();
-	}
+		}
 
 		@Override
 		public void mouseClicked(MouseEvent e){
-	}
+		}
 
 		@Override
 		public void mouseEntered(MouseEvent e) {
-	}
+		}
 
 		@Override
 		public void mouseExited(MouseEvent e) {
-	}
+		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {
-	}
+		}
 
 		@Override
 		public void mouseReleased(MouseEvent e) {
-	}
+		}
 		
 	}
 

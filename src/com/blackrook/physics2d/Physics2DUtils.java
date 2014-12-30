@@ -149,12 +149,13 @@ public final class Physics2DUtils
 
 	/**
 	 * Tests a collision between two bodies.
+	 * @param model the physics model to use for object attributes.
+	 * @param collision the collision data object. source and target should already be set.
 	 * @param bodyA the first body.
 	 * @param bodyB the second body.
-	 * @param collision the collision data object. source and target should already be set.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testCollision(Physics2DModel<T> model, T bodyA, T bodyB, Collision2D<T> collision)
+	public static <T> boolean testCollision(Physics2DModel<T> model, Collision2D<T> collision, T bodyA, T bodyB)
 	{
 		long time = System.nanoTime();
 		boolean collide = false;
@@ -171,35 +172,58 @@ public final class Physics2DUtils
 			if (shapeA instanceof Circle)
 			{
 				if (shapeB instanceof Circle)
-					collide = testStationaryCollision(model, (Circle)shapeA, (Circle)shapeB, collision);
+					collide = testStationaryCollision(model, collision, (Circle)shapeA, (Circle)shapeB);
 				else if (shapeB instanceof AABB2D)
-					collide = testStationaryCollision(model, (Circle)shapeA, (AABB2D)shapeB, collision);
+					collide = testStationaryCollision(model, collision, (Circle)shapeA, (AABB2D)shapeB);
 				else
-					collide = testSeparatingAxisCollision(model, bodyA, bodyB, collision);
+					collide = testSeparatingAxisCollision(model, collision, bodyA, bodyB);
 			}
 			else if (shapeA instanceof AABB2D)
 			{
 				if (shapeB instanceof AABB2D)
-					collide = testStationaryCollision(model, (AABB2D)shapeA, (AABB2D)shapeB, collision);
+					collide = testStationaryCollision(model, collision, (AABB2D)shapeA, (AABB2D)shapeB);
 				else if (shapeB instanceof Circle)
-					collide = testStationaryCollision(model, (AABB2D)shapeA, (Circle)shapeB, collision);
+					collide = testStationaryCollision(model, collision, (AABB2D)shapeA, (Circle)shapeB);
 				else
-					collide = testSeparatingAxisCollision(model, bodyA, bodyB, collision);
+					collide = testSeparatingAxisCollision(model, collision, bodyA, bodyB);
 			}
 			else
 			{
-				collide = testSeparatingAxisCollision(model, bodyA, bodyB, collision);
+				collide = testSeparatingAxisCollision(model, collision, bodyA, bodyB);
 			}
 		}
 		// use other model.
 		else
 		{
-			collide = testSeparatingAxisCollision(model, bodyA, bodyB, collision);
+			collide = testSeparatingAxisCollision(model, collision, bodyA, bodyB);
 		}
 		
 		collision.calcNanos = System.nanoTime() - time;
 		
 		return collide;
+	}
+	
+	/**
+	 * Tests a raycasting collision on a body.
+	 * The direction of the ray influences the incident point.
+	 * @param model the physics model to use for object attributes.
+	 * @param collision the collision data object. source and target should already be set.
+	 * @param start the starting point of the ray.
+	 * @param end the ending point of the ray.
+	 * @param body the test body.
+	 * @return true if a collision occurs shapes collide, false otherwise.
+	 */
+	public static <T> boolean testRaycastCollision(Physics2DModel<T> model, Collision2D<T> collision, Point2D start, Point2D end, T body)
+	{
+		collision.method = Method.SEPARATING_AXIS;
+		
+		Cache cache = getCache();
+		
+		
+		
+		// TODO: Finish this.
+		
+		return false;
 	}
 	
 	/**
@@ -210,7 +234,7 @@ public final class Physics2DUtils
 	 * @param collision the collision data object. source and target should already be set.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Circle source, Circle target, Collision2D<T> collision)
+	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Circle source, Circle target)
 	{
 		collision.method = Method.CIRCLE_TO_CIRCLE;
 		
@@ -251,7 +275,7 @@ public final class Physics2DUtils
 	 * @param collision the collision data object. source and target should already be set.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Circle source, AABB2D target, Collision2D<T> collision)
+	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Circle source, AABB2D target)
 	{
 		collision.method = Method.CIRCLE_TO_BOX;
 	
@@ -349,7 +373,7 @@ public final class Physics2DUtils
 	 * @param collision the collision data object. source and target should already be set.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, AABB2D source, Circle target, Collision2D<T> collision)
+	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, AABB2D source, Circle target)
 	{
 		collision.method = Method.BOX_TO_CIRCLE;
 	
@@ -461,7 +485,7 @@ public final class Physics2DUtils
 	 * @param collision the collision data object. source and target should already be set.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, AABB2D source, AABB2D target, Collision2D<T> collision)
+	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, AABB2D source, AABB2D target)
 	{
 		collision.method = Method.BOX_TO_BOX;
 	
@@ -603,7 +627,7 @@ public final class Physics2DUtils
 	 * @param collision the collision information.
 	 * TODO: Incident points for separating axis test.
 	 */
-	public static <T> boolean testSeparatingAxisCollision(Physics2DModel<T> model, T bodyA, T bodyB, Collision2D<T> collision)
+	public static <T> boolean testSeparatingAxisCollision(Physics2DModel<T> model, Collision2D<T> collision, T bodyA, T bodyB)
 	{
 		collision.method = Method.SEPARATING_AXIS;
 	
