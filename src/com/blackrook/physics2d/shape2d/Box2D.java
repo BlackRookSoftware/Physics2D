@@ -14,7 +14,7 @@ import com.blackrook.physics2d.Shape2D;
  * Body rotation does not affect AABBs - they are always aligned to the primary axes.
  * @author Matthew Tropiano
  */
-public class AABB2D implements Shape2D
+public class Box2D implements Shape2D
 {
 	/** Box half width. */
 	protected float halfWidth;
@@ -26,7 +26,7 @@ public class AABB2D implements Shape2D
 	 * @param halfWidth the box's half-width.
 	 * @param halfHeight the box's half-height.
 	 */
-	public AABB2D(float halfWidth, float halfHeight)
+	public Box2D(float halfWidth, float halfHeight)
 	{
 		this.halfWidth = halfWidth;
 		this.halfHeight = halfHeight;

@@ -17,7 +17,7 @@ import com.blackrook.commons.math.geometry.Line2D;
 import com.blackrook.commons.math.geometry.Point2D;
 import com.blackrook.commons.math.geometry.Vect2D;
 import com.blackrook.physics2d.Collision2D.Method;
-import com.blackrook.physics2d.shape2d.AABB2D;
+import com.blackrook.physics2d.shape2d.Box2D;
 import com.blackrook.physics2d.shape2d.Circle;
 import com.blackrook.physics2d.shape2d.Polygon;
 
@@ -149,8 +149,9 @@ public final class Physics2DUtils
 
 	/**
 	 * Tests a collision between two bodies.
+	 * Sets the source and the target on the collision object.
 	 * @param model the physics model to use for object attributes.
-	 * @param collision the collision data object. source and target should already be set.
+	 * @param collision the collision data object.
 	 * @param bodyA the first body.
 	 * @param bodyB the second body.
 	 * @return true if the shapes collide, false otherwise.
@@ -160,7 +161,10 @@ public final class Physics2DUtils
 		long time = System.nanoTime();
 		boolean collide = false;
 		
+		collision.source = bodyA;
+		collision.target = bodyB;
 		collision.axisCount = 0;
+		collision.incidentPoint.set(0, 0);
 		collision.incidentVector.set(0, 0);
 		
 		// use better models for known shapes.
@@ -173,17 +177,17 @@ public final class Physics2DUtils
 			{
 				if (shapeB instanceof Circle)
 					collide = testStationaryCollision(model, collision, (Circle)shapeA, (Circle)shapeB);
-				else if (shapeB instanceof AABB2D)
-					collide = testStationaryCollision(model, collision, (Circle)shapeA, (AABB2D)shapeB);
+				else if (shapeB instanceof Box2D)
+					collide = testStationaryCollision(model, collision, (Circle)shapeA, (Box2D)shapeB);
 				else
 					collide = testSeparatingAxisCollision(model, collision, bodyA, bodyB);
 			}
-			else if (shapeA instanceof AABB2D)
+			else if (shapeA instanceof Box2D)
 			{
-				if (shapeB instanceof AABB2D)
-					collide = testStationaryCollision(model, collision, (AABB2D)shapeA, (AABB2D)shapeB);
+				if (shapeB instanceof Box2D)
+					collide = testStationaryCollision(model, collision, (Box2D)shapeA, (Box2D)shapeB);
 				else if (shapeB instanceof Circle)
-					collide = testStationaryCollision(model, collision, (AABB2D)shapeA, (Circle)shapeB);
+					collide = testStationaryCollision(model, collision, (Box2D)shapeA, (Circle)shapeB);
 				else
 					collide = testSeparatingAxisCollision(model, collision, bodyA, bodyB);
 			}
@@ -206,28 +210,54 @@ public final class Physics2DUtils
 	/**
 	 * Tests a raycasting collision on a body.
 	 * The direction of the ray influences the incident point.
+	 * Sets only the target on the collision object.
 	 * @param model the physics model to use for object attributes.
-	 * @param collision the collision data object. source and target should already be set.
-	 * @param start the starting point of the ray.
-	 * @param end the ending point of the ray.
+	 * @param collision the collision data object.
+	 * @param line the line for intersection.
 	 * @param body the test body.
 	 * @return true if a collision occurs shapes collide, false otherwise.
 	 */
-	public static <T> boolean testRaycastCollision(Physics2DModel<T> model, Collision2D<T> collision, Point2D start, Point2D end, T body)
+	public static <T> boolean testRaycastCollision(Physics2DModel<T> model, Collision2D<T> collision, Line2D line, T body)
 	{
 		collision.method = Method.SEPARATING_AXIS;
 		
-		Cache cache = getCache();
+		long time = System.nanoTime();
+		boolean collide = false;
 		
+		collision.source = null;
+		collision.target = body;
+		collision.axisCount = 0;
+		collision.incidentPoint.set(0, 0);
+		collision.incidentVector.set(0, 0);
 		
+		// use better models for known shapes.
+		if (!checkSweep(model, body))
+		{
+			Shape2D shape = model.getObjectCollisionShape(body);
+			
+			if (shape instanceof Circle)
+				collide = testRaycastStationaryCollision(model, collision, line, (Circle)shape);
+			else if (shape instanceof Box2D)
+				collide = testRaycastStationaryCollision(model, collision, line, (Box2D)shape);
+			else if (shape instanceof Polygon)
+				collide = testRaycastStationaryCollision(model, collision, line, (Polygon)body);
+			else
+				collide = testRaycastSeparatingAxisCollision(model, collision, line, body);
+		}
+		// use other model.
+		else
+		{
+			collide = testRaycastSeparatingAxisCollision(model, collision, line, body);
+		}
 		
-		// TODO: Finish this.
+		collision.calcNanos = System.nanoTime() - time;
 		
-		return false;
+		return collide;
 	}
 	
 	/**
 	 * Tests if two shapes collide. Circle vs. Circle.
+	 * Sets the source and the target on the collision object.
 	 * @param model the collision model to use.
 	 * @param source the source shape.
 	 * @param target the target shape.
@@ -269,13 +299,14 @@ public final class Physics2DUtils
 
 	/**
 	 * Tests if two shapes collide. Circle vs. Box.
+	 * Sets the source and the target on the collision object.
 	 * @param model the collision model to use.
 	 * @param source the source shape.
 	 * @param target the target shape.
 	 * @param collision the collision data object. source and target should already be set.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Circle source, AABB2D target)
+	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Circle source, Box2D target)
 	{
 		collision.method = Method.CIRCLE_TO_BOX;
 	
@@ -368,12 +399,13 @@ public final class Physics2DUtils
 
 	/**
 	 * Tests if two shapes collide. Box vs. Circle.
+	 * Sets the source and the target on the collision object.
 	 * @param source the source shape.
 	 * @param target the target shape.
 	 * @param collision the collision data object. source and target should already be set.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, AABB2D source, Circle target)
+	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Box2D source, Circle target)
 	{
 		collision.method = Method.BOX_TO_CIRCLE;
 	
@@ -480,12 +512,13 @@ public final class Physics2DUtils
 
 	/**
 	 * Tests if two shapes collide. AABB vs. AABB.
+	 * Sets the source and the target on the collision object.
 	 * @param source the source shape.
 	 * @param target the target shape.
 	 * @param collision the collision data object. source and target should already be set.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, AABB2D source, AABB2D target)
+	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Box2D source, Box2D target)
 	{
 		collision.method = Method.BOX_TO_BOX;
 	
@@ -621,50 +654,141 @@ public final class Physics2DUtils
 	}
 
 	/**
-	 * Tests collisions using separating axis.
-	 * @param bodyA the first body. 
-	 * @param bodyB the second body.
-	 * @param collision the collision information.
-	 * TODO: Incident points for separating axis test.
+	 * Tests a raycasting collision on a stationary circle.
+	 * The direction of the ray influences the incident point.
+	 * Sets only the target on the collision object.
+	 * @param model the physics model to use for object attributes.
+	 * @param collision the collision data object. source and target should already be set.
+	 * @param line the line for intersection.
+	 * @param body the test body.
+	 * @return true if a collision occurs shapes collide, false otherwise.
 	 */
-	public static <T> boolean testSeparatingAxisCollision(Physics2DModel<T> model, Collision2D<T> collision, T bodyA, T bodyB)
+	public static <T> boolean testRaycastStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Line2D line, Circle body)
 	{
-		collision.method = Method.SEPARATING_AXIS;
-	
-		Cache cache = getCache();
-		cache.angleHashReset();
+		collision.method = Method.LINE_TO_CIRCLE;
 		
-		boolean stillGood = true;
-	
-		// get separating axes.
-		cacheSeparatingAxes(model, bodyA, bodyB);
-		ResettableIterator<Vect2D> rit = cache.axisIterator;
-		rit.reset();
-		while (stillGood && rit.hasNext())
+		Vect2D incVect = collision.incidentVector;
+		Point2D incPoint = collision.incidentPoint;
+		
+		Cache cache = getCache();
+		model.getObjectCollisionCenter(collision.target, cache.point);
+		double cpx = cache.point.x;
+		double cpy = cache.point.y;
+
+		// project center into the line.
+		cache.vector.set(line.pointA, line.pointB);
+		
+		// project center into the line.
+		cache.point.projectOnto(cache.vector);
+		
+		double ppx = cache.point.x;
+		double ppy = cache.point.y;
+		
+		double dist = distance(cpx, cpy, ppx, ppy);
+		double radius = body.getRadius();
+		
+		// no collision if distance to projected
+		if (dist > radius)
+			return false;
+		
+		// set incident vector (parallel with line normal)
+		incVect.set(cpx, cpy, ppx, ppy);
+		incVect.setLength(radius - dist);
+		
+		// distance from incident point to projected point.
+		double ipdist = Math.sqrt(radius * radius - dist * dist);
+		
+		incPoint.set(ppx, ppy);
+		cache.vector.set(ppx, ppy, cpx, cpy);
+		cache.vector.setLength(ipdist);
+		
+		incPoint.add(cache.vector);
+		
+		return true;
+	}
+
+	/**
+	 * Tests a raycasting collision on a stationary bounding box.
+	 * The direction of the ray influences the incident point.
+	 * Sets only the target on the collision object.
+	 * @param model the physics model to use for object attributes.
+	 * @param collision the collision data object. source and target should already be set.
+	 * @param line the line for intersection.
+	 * @param body the test body.
+	 * @return true if a collision occurs shapes collide, false otherwise.
+	 */
+	public static <T> boolean testRaycastStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Line2D line, Box2D body)
+	{
+		collision.method = Method.LINE_TO_BOX;
+		
+		Vect2D incVect = collision.incidentVector;
+		Point2D incPoint = collision.incidentPoint;
+		
+		Cache cache = getCache();
+		model.getObjectCollisionCenter(collision.target, cache.point);
+		double cpx = cache.point.x;
+		double cpy = cache.point.y;
+		
+		// A line crossing through a convex shape can - at most - bisect two sides.
+		// These points are the incident, but the closest to the line start is the incident point recorded.
+		boolean firstCollision = false;
+		boolean secondCollision = false;
+		
+		for (int i = 0; i < 4; i++)
 		{
-			Vect2D axis = rit.next();
-			double angle = (double)RMath.getVectorAngleDegrees(axis.x, axis.y);
-			angle = angle > 180.0 ? angle - 180.0 : angle;
-	
-			// if I used this axis already, else test. 
-			if (!cache.angleHashContains(angle))
+			double sx, sy, tx, ty;
+			
+			switch (i)
 			{
-				cache.addAngleHash(angle);
-				collision.axisCount++;
-				stillGood = axisOverlapTest(model, bodyA, bodyB, axis, cache.vector);
-				if (stillGood)
-				{
-					double ovllen = cache.vector.length();
-					if ((ovllen > 0.0 && ovllen < collision.incidentVector.length()) || collision.incidentVector.isZero())
-						collision.incidentVector.set(cache.vector);
-				}
+				default:
+					throw new RuntimeException("YOU SHOULDN'T SEE THIS!");
+				case 0:
+					sx = cpx - body.getHalfWidth();
+					sy = cpy - body.getHalfHeight();
+					tx = cpx + body.getHalfWidth();
+					ty = cpy - body.getHalfHeight();
+					break;
+				case 1:
+					sx = cpx - body.getHalfWidth();
+					sy = cpy - body.getHalfHeight();
+					tx = cpx - body.getHalfWidth();
+					ty = cpy + body.getHalfHeight();
+					break;
+				case 2:
+					sx = cpx - body.getHalfWidth();
+					sy = cpy + body.getHalfHeight();
+					tx = cpx + body.getHalfWidth();
+					ty = cpy + body.getHalfHeight();
+					break;
+				case 3:
+					sx = cpx + body.getHalfWidth();
+					sy = cpy - body.getHalfHeight();
+					tx = cpx + body.getHalfWidth();
+					ty = cpy + body.getHalfHeight();
+					break;
 			}
+			
+			boolean inter = test2DSegments(cache.point, line.pointA.x, line.pointA.y, line.pointB.x, line.pointB.y, sx, sy, tx, ty);
+			// TODO: Finish.
 		}
 		
-		if (stillGood)
-			collision.incidentVector.negate();
-		
-		return stillGood;
+		return true;
+	}
+
+	/**
+	 * Tests a raycasting collision on a stationary polygon.
+	 * The direction of the ray influences the incident point.
+	 * Sets only the target on the collision object.
+	 * @param model the physics model to use for object attributes.
+	 * @param collision the collision data object. source and target should already be set.
+	 * @param line the line for intersection.
+	 * @param body the test body.
+	 * @return true if a collision occurs shapes collide, false otherwise.
+	 */
+	public static <T> boolean testRaycastStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Line2D line, Polygon body)
+	{
+		// TODO: Finish this.
+		return false;
 	}
 
 	/**
@@ -700,8 +824,8 @@ public final class Physics2DUtils
 	{
 		Shape2D shape = model.getObjectCollisionShape(body2d);
 		
-		if (shape instanceof AABB2D)
-			projectAABB(model, (AABB2D)shape, body2d, axis, out);
+		if (shape instanceof Box2D)
+			projectAABB(model, (Box2D)shape, body2d, axis, out);
 		else if (shape instanceof Circle)
 			projectCircle(model, (Circle)shape, body2d, axis, out);
 		else if (shape instanceof Polygon)
@@ -759,7 +883,7 @@ public final class Physics2DUtils
 	}
 
 	/** Project AABB */
-	public static <T> void projectAABB(Physics2DModel<T> model, AABB2D aabb, T body2d, Vect2D axis, Line2D out)
+	public static <T> void projectAABB(Physics2DModel<T> model, Box2D aabb, T body2d, Vect2D axis, Line2D out)
 	{
 		Cache cache = getCache();
 		
@@ -950,14 +1074,14 @@ public final class Physics2DUtils
 			cacheSeparatingAxesCircle(model, bodyA, bodyB);
 		else
 		{
-			if (shapeA instanceof AABB2D)
+			if (shapeA instanceof Box2D)
 				cacheSeparatingAxesAABB(model, bodyA);
 			else if (shapeA instanceof Polygon)
 				cacheSeparatingAxesPolygon(model, bodyA);
 	
 			if (shapeB instanceof Circle)
 				cacheSeparatingAxesCircle(model, bodyB, bodyA);
-			else if (shapeB instanceof AABB2D)
+			else if (shapeB instanceof Box2D)
 				cacheSeparatingAxesAABB(model, bodyB);
 			else if (shapeB instanceof Polygon)
 				cacheSeparatingAxesPolygon(model, bodyB);
@@ -1033,6 +1157,72 @@ public final class Physics2DUtils
 		
 	}
 
+	/** Returns 2 times the signed triangle area. */
+	private static double signedTriangleArea(double ax, double ay, double bx, double by, double cx, double cy)
+	{
+		return (ax - cx) * (by - cy) - (ay - cy) * (bx - cx);
+	}
+
+	/**
+	 * Tests collisions using separating axis.
+	 * @param bodyA the first body. 
+	 * @param bodyB the second body.
+	 * @param collision the collision information.
+	 * TODO: Incident points for separating axis test.
+	 */
+	private static <T> boolean testRaycastSeparatingAxisCollision(Physics2DModel<T> model, Collision2D<T> collision, Line2D line, T bodyB)
+	{
+		// TODO: Finish.
+		return false;
+	}
+	
+	/**
+	 * Tests collisions using separating axis.
+	 * @param bodyA the first body. 
+	 * @param bodyB the second body.
+	 * @param collision the collision information.
+	 * TODO: Incident points for separating axis test.
+	 */
+	private static <T> boolean testSeparatingAxisCollision(Physics2DModel<T> model, Collision2D<T> collision, T bodyA, T bodyB)
+	{
+		collision.method = Method.SEPARATING_AXIS;
+	
+		Cache cache = getCache();
+		cache.angleHashReset();
+		
+		boolean stillGood = true;
+	
+		// get separating axes.
+		cacheSeparatingAxes(model, bodyA, bodyB);
+		ResettableIterator<Vect2D> rit = cache.axisIterator;
+		rit.reset();
+		while (stillGood && rit.hasNext())
+		{
+			Vect2D axis = rit.next();
+			double angle = (double)RMath.getVectorAngleDegrees(axis.x, axis.y);
+			angle = angle > 180.0 ? angle - 180.0 : angle;
+	
+			// if I used this axis already, else test. 
+			if (!cache.angleHashContains(angle))
+			{
+				cache.addAngleHash(angle);
+				collision.axisCount++;
+				stillGood = axisOverlapTest(model, bodyA, bodyB, axis, cache.vector);
+				if (stillGood)
+				{
+					double ovllen = cache.vector.length();
+					if ((ovllen > 0.0 && ovllen < collision.incidentVector.length()) || collision.incidentVector.isZero())
+						collision.incidentVector.set(cache.vector);
+				}
+			}
+		}
+		
+		if (stillGood)
+			collision.incidentVector.negate();
+		
+		return stillGood;
+	}
+
 	/**
 	 * Sets incident vectors and points if a collision occurs between
 	 * Circles and AABBs.
@@ -1069,6 +1259,34 @@ public final class Physics2DUtils
 			point.set(targradius * Math.cos(theta) + cx, targradius * Math.sin(theta) + cy);
 			return true;
 		}
+		return false;
+	}
+
+	/** Test if two lines intersect and sets the incident point. */
+	private static boolean test2DSegments(Point2D p, double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy)
+	{
+		double a1 = signedTriangleArea(ax, ay, bx, by, dx, dy);
+		double a2 = signedTriangleArea(ax, ay, bx, by, cx, cy);
+		
+		// If the triangle areas have opposite signs. 
+		if (a1 != 0.0 && a2 != 0.0 && a1 * a2 < 0.0)
+		{
+			double a3 = signedTriangleArea(cx, cy, dx, dy, ax, ay);
+			double a4 = a3 + a2 - a1;
+			
+			if (a3 * a4 < 0.0)
+			{
+				double t = a3 / (a3 - a4);
+				double tx = Math.cos(t);
+				double ty = Math.sin(t);
+	
+				p.x = ax + tx * (bx - ax);
+				p.y = ay + ty * (by - ay);
+	
+				return true;
+			}
+		}
+		
 		return false;
 	}
 	

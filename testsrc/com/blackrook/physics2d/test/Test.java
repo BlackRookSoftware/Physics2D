@@ -20,7 +20,6 @@ import javax.swing.event.MouseInputListener;
 
 import com.blackrook.commons.logging.Logger;
 import com.blackrook.commons.logging.LoggingFactory;
-import com.blackrook.commons.logging.driver.ConsoleLogger;
 import com.blackrook.commons.math.RMath;
 import com.blackrook.commons.math.geometry.Line2D;
 import com.blackrook.commons.math.geometry.Point2D;
@@ -28,7 +27,7 @@ import com.blackrook.commons.math.geometry.Vect2D;
 import com.blackrook.physics2d.Collision2D;
 import com.blackrook.physics2d.Physics2DUtils;
 import com.blackrook.physics2d.Shape2D;
-import com.blackrook.physics2d.shape2d.AABB2D;
+import com.blackrook.physics2d.shape2d.Box2D;
 import com.blackrook.physics2d.shape2d.Circle;
 import com.blackrook.physics2d.shape2d.Polygon;
 
@@ -38,15 +37,15 @@ public class Test {
 	public static CollisionBody cbSrc;
 	public static CollisionBody cbTarg;
 	public static CollisionModel model = new CollisionModel(); 
-	static final Logger logger = (new LoggingFactory(new ConsoleLogger())).getLogger(Test.class);
+	static final Logger logger = LoggingFactory.createConsoleLoggerFor(Test.class);
 
 	
 	public static void main(String[] args)
 	{
 		Shape2D[] shapes = {
 			new Circle(50),
-			new AABB2D(50, 50),
-			new AABB2D(25, 25),
+			new Box2D(50, 50),
+			new Box2D(25, 25),
 			new Polygon(new Point2D[]{
 				new Point2D(-40,  15),
 				new Point2D(0,    40),
@@ -203,7 +202,7 @@ public class Test {
 				if (vx != 0.0 || vy != 0.0)
 					g2d.drawOval(ix-ir-ivx, iy-ir-ivy, ir*2, ir*2);
 			}
-			else if (s instanceof AABB2D)
+			else if (s instanceof Box2D)
 			{
 				g2d.drawRect(ix-ihw, iy-ihh, ihw*2, ihh*2);
 				if (vx != 0.0 || vy != 0.0)
@@ -254,8 +253,8 @@ public class Test {
 
 			if (shape instanceof Circle)
 				Physics2DUtils.projectCircle(model, (Circle)shape, c2d.source, normal, proj);
-			else if (shape instanceof AABB2D)
-				Physics2DUtils.projectAABB(model, (AABB2D)shape, c2d.source, normal, proj);
+			else if (shape instanceof Box2D)
+				Physics2DUtils.projectAABB(model, (Box2D)shape, c2d.source, normal, proj);
 			else if (shape instanceof Polygon)
 				Physics2DUtils.projectPolygon(model, (Polygon)shape, c2d.source, normal, proj);
 			
@@ -263,8 +262,8 @@ public class Test {
 
 			if (shape instanceof Circle)
 				Physics2DUtils.projectCircle(model, (Circle)shape, c2d.target, normal, proj2);
-			else if (shape instanceof AABB2D)
-				Physics2DUtils.projectAABB(model, (AABB2D)shape, c2d.target, normal, proj2);
+			else if (shape instanceof Box2D)
+				Physics2DUtils.projectAABB(model, (Box2D)shape, c2d.target, normal, proj2);
 			else if (shape instanceof Polygon)
 				Physics2DUtils.projectPolygon(model, (Polygon)shape, c2d.target, normal, proj2);
 			repaint();

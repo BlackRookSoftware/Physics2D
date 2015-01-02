@@ -28,13 +28,15 @@ public interface Physics2DModel<T extends Object>
 	public void getObjectCollisionCenter(T object, Point2D center);
 	
 	/**
-	 * Gets an object's half-widths for its area.
+	 * Gets an object's half-widths for its BOUNDING area.
+	 * This area is used for broadphase collision detection, and may not represent the object's actual collision zone!
 	 */
 	public void getObjectCollisionHalfWidths(T object, Tuple2D halfwidths);
 	
 	/**
 	 * Gets the velocity of this body along the X-axis.
 	 * This also influences collision along separating axes and incident vectors.
+	 * The cumulative area is used for broadphase collision detection, and may not represent the object's actual collision zone!
 	 */
 	public void getObjectCollisionVelocity(T object, Vect2D velocity);
 
@@ -46,6 +48,7 @@ public interface Physics2DModel<T extends Object>
 	/**
 	 * Gets the object's squared radius, eliminating a 
 	 * potentially expensive square root call.
+	 * This area is used for broadphase collision detection, and may not represent the object's actual collision zone!
 	 * <p>
 	 * Since this could be an expensive call, this 
 	 * is not always used - it is used if the object's useRadius() 
@@ -56,6 +59,7 @@ public interface Physics2DModel<T extends Object>
 	/**
 	 * Gets the rotation of this body around the Z-axis.
 	 * This also influences collision along separating axes and incident vectors.
+	 * This may not have an impact on different shapes like Boxes and Circles.
 	 * @return the rotation from the base positioning in degrees.
 	 */
 	public double getObjectCollisionRotationZ(T object);
