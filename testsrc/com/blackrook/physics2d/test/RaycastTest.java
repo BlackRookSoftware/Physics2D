@@ -23,7 +23,6 @@ import com.blackrook.commons.logging.LoggingFactory;
 import com.blackrook.commons.math.RMath;
 import com.blackrook.commons.math.geometry.Line2D;
 import com.blackrook.commons.math.geometry.Point2D;
-import com.blackrook.commons.math.geometry.Vect2D;
 import com.blackrook.physics2d.Collision2D;
 import com.blackrook.physics2d.Physics2DUtils;
 import com.blackrook.physics2d.Shape2D;
@@ -60,7 +59,7 @@ public class RaycastTest {
 			})
 		};
 		
-		cbTarg = new CollisionBody(shapes[0]);
+		cbTarg = new CollisionBody(shapes[1]);
 		
 		c2d = new Collision2D<CollisionBody>();
 		c2d.target = cbTarg;
@@ -86,7 +85,6 @@ public class RaycastTest {
 		Collision2D<CollisionBody> c2d;
 		Point2D tp1;
 		Point2D tp2;
-		Vect2D tv;
 		BufferedImage bi;
 		
 		TestCanvas(Collision2D<CollisionBody> c2d)
@@ -94,7 +92,6 @@ public class RaycastTest {
 			this.c2d = c2d;
 			tp1 = new Point2D();
 			tp2 = new Point2D();
-			tv = new Vect2D();
 			setPreferredSize(new Dimension(640,480));
 			addMouseMotionListener(this);
 			addMouseListener(this);
@@ -126,12 +123,26 @@ public class RaycastTest {
 			g2d.scale(1, -1);
 			g2d.translate(0, -getHeight());
 			
+			g2d.setColor(Color.RED);
+			drawShape(g2d, cbTarg.shape, cbTarg.x, cbTarg.y, cbTarg.vx, cbTarg.vy, cbTarg.rotation);
+
 			g2d.setColor(Color.GRAY);
-			g2d.drawLine((int)line.pointA.x, (int)line.pointA.y, (int)line.pointB.x, (int)line.pointB.y);
+			drawScan(g2d, line);
 
 			g2d.setColor(Color.WHITE);
 			drawIncident(g2d, c2d);
 			g2d.dispose();
+		}
+		
+		public void drawScan(Graphics2D g2d, Line2D line)
+		{
+			double x = getWidth()/2;
+			double y = getHeight()/2;
+			int ix0 = (int)(x+line.pointA.x);
+			int ix1 = (int)(x+line.pointB.x);
+			int iy0 = (int)(y+line.pointA.y);
+			int iy1 = (int)(y+line.pointB.y);
+			g2d.drawLine(ix0, iy0, ix1, iy1);
 		}
 		
 		public void drawIncident(Graphics2D g2d, Collision2D<CollisionBody> c2d)
@@ -205,9 +216,8 @@ public class RaycastTest {
 
 		@Override
 		public void mouseMoved(MouseEvent e) {
-			
-			line.pointB.x = e.getX();
-			line.pointB.y = e.getY();
+			line.pointB.x = e.getX()-(getWidth()/2);
+			line.pointB.y = -(e.getY()-(getHeight()/2));
 			tc();
 			repaint();
 		}

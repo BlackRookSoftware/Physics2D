@@ -278,7 +278,7 @@ public final class Physics2DUtils
 		double tpx = cache.point.x;
 		double tpy = cache.point.y;
 
-		double cdist = distance(spx, spy, tpx, tpy);
+		double cdist = RMath.getLineLength(spx, spy, tpx, tpy);
 		double rdist = source.getRadius() + target.getRadius();
 		if (cdist < rdist)
 		{
@@ -671,9 +671,17 @@ public final class Physics2DUtils
 		Point2D incPoint = collision.incidentPoint;
 		
 		Cache cache = getCache();
+				
 		model.getObjectCollisionCenter(collision.target, cache.point);
 		double cpx = cache.point.x;
 		double cpy = cache.point.y;
+		
+		double dist = 0.0;
+		double radius = body.getRadius();
+		
+		// cull outside of possible vectors (dot product of line and line start to center).
+		if (RMath.getVectorUnitDotProduct(cpx - line.pointA.x, cpy - line.pointA.y, line.pointB.x - line.pointA.x, line.pointB.y - line.pointA.y) <= 0)
+			return false;
 
 		// project center into the line.
 		cache.vector.set(line.pointA, line.pointB);
@@ -684,10 +692,9 @@ public final class Physics2DUtils
 		double ppx = cache.point.x;
 		double ppy = cache.point.y;
 		
-		double dist = distance(cpx, cpy, ppx, ppy);
-		double radius = body.getRadius();
+		dist = RMath.getLineLength(cpx, cpy, ppx, ppy);
 		
-		// no collision if distance to projected
+		// no collision if distance to projected less than radius
 		if (dist > radius)
 			return false;
 		
@@ -695,11 +702,13 @@ public final class Physics2DUtils
 		incVect.set(cpx, cpy, ppx, ppy);
 		incVect.setLength(radius - dist);
 		
+		// FIXME: Incident point is incorrect.
+		
 		// distance from incident point to projected point.
-		double ipdist = Math.sqrt(radius * radius - dist * dist);
+		double ipdist = Math.sqrt(radius * radius - (radius - dist) * (radius - dist));
 		
 		incPoint.set(ppx, ppy);
-		cache.vector.set(ppx, ppy, cpx, cpy);
+		cache.vector.set(line.pointA.x, line.pointB.y, ppx, ppy);
 		cache.vector.setLength(ipdist);
 		
 		incPoint.add(cache.vector);
@@ -728,13 +737,19 @@ public final class Physics2DUtils
 		model.getObjectCollisionCenter(collision.target, cache.point);
 		double cpx = cache.point.x;
 		double cpy = cache.point.y;
+
+		// intersection incident points.
+		double ipx1 = 0.0;
+		double ipy1 = 0.0;
+		double ipx2 = 0.0;
+		double ipy2 = 0.0;
 		
 		// A line crossing through a convex shape can - at most - bisect two sides.
 		// These points are the incident, but the closest to the line start is the incident point recorded.
 		boolean firstCollision = false;
 		boolean secondCollision = false;
 		
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 4 && !(firstCollision && secondCollision); i++)
 		{
 			double sx, sy, tx, ty;
 			
@@ -768,11 +783,58 @@ public final class Physics2DUtils
 					break;
 			}
 			
-			boolean inter = test2DSegments(cache.point, line.pointA.x, line.pointA.y, line.pointB.x, line.pointB.y, sx, sy, tx, ty);
-			// TODO: Finish.
+			boolean intersect = test2DSegments(cache.point, line.pointA.x, line.pointA.y, line.pointB.x, line.pointB.y, sx, sy, tx, ty);
+			if (intersect)
+			{
+				if (!firstCollision)
+				{
+					firstCollision = true;
+					ipx1 = cache.point.x;
+					ipy1 = cache.point.y;
+				}
+				else
+				{
+					secondCollision = true;
+					ipx2 = cache.point.x;
+					ipy2 = cache.point.y;
+				}
+			}
 		}
 		
-		return true;
+		// FIXME: Incident point/vector is incorrect.
+		
+		if (firstCollision)
+		{
+			if (secondCollision)
+			{
+				// what is closer to the line start?
+				if (RMath.getLineLengthSquared(ipx1, ipy1, line.pointA.x, line.pointA.y) < RMath.getLineLengthSquared(ipx2, ipy2, line.pointA.x, line.pointA.y))
+				{
+					incPoint.x = ipx1;
+					incPoint.y = ipy1;
+				}
+				else
+				{
+					incPoint.x = ipx2;
+					incPoint.y = ipy2;
+				}
+			}
+			else
+			{
+				incPoint.x = ipx1;
+				incPoint.y = ipy1;
+			}
+			
+			// calculate incident vector.
+			cache.vector.set(line.pointA, line.pointB);
+			cache.vector.leftNormal();
+			projectAABB(model, body, collision.target, cache.vector, cache.lineA);
+			//test
+			
+			return true;
+		}
+		else
+			return false;
 	}
 
 	/**
@@ -985,22 +1047,6 @@ public final class Physics2DUtils
 		
 		out.pointA.projectOnto(axis);
 		out.pointB.projectOnto(axis);
-	}
-
-	/**
-	 * Returns the square distance between two points.
-	 */
-	public static double distance(double pointAX, double pointAY, double pointBX, double pointBY)
-	{
-		return Math.sqrt(squareDistance(pointAX, pointAY, pointBX, pointBY));
-	}
-
-	/**
-	 * Returns the square distance between two points.
-	 */
-	public static double squareDistance(double pointAX, double pointAY, double pointBX, double pointBY)
-	{
-		return (pointAX - pointBX)*(pointAX - pointBX) + (pointAY - pointBY)*(pointAY - pointBY);
 	}
 
 	/**
@@ -1230,7 +1276,7 @@ public final class Physics2DUtils
 	private static boolean testCircleAABBIncidents(Vect2D vect, Point2D point, 
 			double srcradius, double spx, double spy, double ax, double ay)
 	{
-		double dist = distance(spx, spy, ax, ay);
+		double dist = RMath.getLineLength(spx, spy, ax, ay);
 		if (dist < srcradius)
 		{
 			double dx = ax - spx;
@@ -1250,7 +1296,7 @@ public final class Physics2DUtils
 	private static boolean testAABBCircleIncidents(Vect2D vect, Point2D point, 
 		double targradius, double bx, double by, double cx, double cy)
 	{
-		double dist = distance(cx, cy, bx, by);
+		double dist = RMath.getLineLength(cx, cy, bx, by);
 		if (dist < targradius)
 		{
 			double theta = RMath.getVectorAngleRadians(bx - cx, by - cy);
@@ -1290,5 +1336,4 @@ public final class Physics2DUtils
 		return false;
 	}
 	
-
 }
