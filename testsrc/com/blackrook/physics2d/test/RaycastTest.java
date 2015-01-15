@@ -12,6 +12,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
@@ -35,31 +37,31 @@ public class RaycastTest {
 	public static Collision2D<CollisionBody> c2d;
 	public static Line2D line = new Line2D();
 	public static CollisionBody cbTarg;
+	public static int targIndex;
 	public static CollisionModel model = new CollisionModel(); 
 	static final Logger logger = LoggingFactory.createConsoleLoggerFor(RaycastTest.class);
-
+	public static final Shape2D[] shapes = {
+		new Circle(50),
+		new Box2D(50, 50),
+		new Polygon(new Point2D[]{
+			new Point2D(-40,  15),
+			new Point2D(0,    40),
+			new Point2D(40,   15),
+			new Point2D(20,  -40),
+			new Point2D(-20, -40),
+		}),
+		new Polygon(new Point2D[]{
+			new Point2D(-20, 20),
+			new Point2D(20, 20),
+			new Point2D(20, -20),
+			new Point2D(-20, -20)
+		})
+	}; 
+	
 	
 	public static void main(String[] args)
 	{
-		Shape2D[] shapes = {
-			new Circle(50),
-			new Box2D(50, 50),
-			new Polygon(new Point2D[]{
-				new Point2D(-40,  15),
-				new Point2D(0,    40),
-				new Point2D(40,   15),
-				new Point2D(20,  -40),
-				new Point2D(-20, -40),
-			}),
-			new Polygon(new Point2D[]{
-				new Point2D(-20, 20),
-				new Point2D(20, 20),
-				new Point2D(20, -20),
-				new Point2D(-20, -20)
-			})
-		};
-		
-		cbTarg = new CollisionBody(shapes[1]);
+		cbTarg = new CollisionBody(shapes[targIndex]);
 		
 		c2d = new Collision2D<CollisionBody>();
 		c2d.target = cbTarg;
@@ -78,7 +80,7 @@ public class RaycastTest {
 		return out;
 	}
 
-	private static class TestCanvas extends Canvas implements MouseInputListener
+	private static class TestCanvas extends Canvas implements MouseInputListener, KeyListener
 	{
 		private static final long serialVersionUID = -7369670472224047283L;
 		
@@ -95,6 +97,7 @@ public class RaycastTest {
 			setPreferredSize(new Dimension(640,480));
 			addMouseMotionListener(this);
 			addMouseListener(this);
+			addKeyListener(this);
 			tc();
 		}
 		
@@ -102,6 +105,9 @@ public class RaycastTest {
 		{
 			long n = System.nanoTime();
 			boolean b = Physics2DUtils.testRaycastCollision(model, c2d, line, cbTarg);
+			
+			//if (b) { cbTarg.x -= c2d.incidentVector.x; cbTarg.y -= c2d.incidentVector.y; }
+			
 			c2d.calcNanos = System.nanoTime() - n;
 			logger.info(b+" "+"IV: "+c2d.incidentVector+" IP: "+c2d.incidentPoint+" "+c2d.method+" AXES: "+c2d.axisCount+" "+c2d.calcNanos+"ns");
 		}
@@ -240,6 +246,30 @@ public class RaycastTest {
 
 		@Override
 		public void mouseReleased(MouseEvent e) {
+		}
+
+		@Override
+		public void keyTyped(KeyEvent e)
+		{
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void keyPressed(KeyEvent e)
+		{
+			if (e.getKeyCode() == KeyEvent.VK_SPACE)
+			{
+				targIndex = (targIndex + 1) % shapes.length;
+				cbTarg.shape = shapes[targIndex];
+			}
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e)
+		{
+			// TODO Auto-generated method stub
+			
 		}
 		
 	}

@@ -240,7 +240,7 @@ public final class Physics2DUtils
 			else if (shape instanceof Box2D)
 				collide = testRaycastStationaryCollision(model, collision, line, (Box2D)shape);
 			else if (shape instanceof Polygon)
-				collide = testRaycastStationaryCollision(model, collision, line, (Polygon)body);
+				collide = testRaycastStationaryCollision(model, collision, line, (Polygon)shape);
 			else
 				collide = testRaycastSeparatingAxisCollision(model, collision, line, body);
 		}
@@ -676,44 +676,106 @@ public final class Physics2DUtils
 		double cpx = cache.point.x;
 		double cpy = cache.point.y;
 		
-		double dist = 0.0;
 		double radius = body.getRadius();
 		
+		// cull short lines.
+		if (RMath.getVectorLength(line.pointB.x - line.pointA.x, line.pointB.y - line.pointA.y) < RMath.getVectorLength(cpx - line.pointA.x, cpy - line.pointA.y) - radius)
+			return false;
+
 		// cull outside of possible vectors (dot product of line and line start to center).
 		if (RMath.getVectorUnitDotProduct(cpx - line.pointA.x, cpy - line.pointA.y, line.pointB.x - line.pointA.x, line.pointB.y - line.pointA.y) <= 0)
 			return false;
 
 		// project center into the line.
 		cache.vector.set(line.pointA, line.pointB);
-		
-		// project center into the line.
 		cache.point.projectOnto(cache.vector);
-		
-		double ppx = cache.point.x;
-		double ppy = cache.point.y;
-		
-		dist = RMath.getLineLength(cpx, cpy, ppx, ppy);
-		
-		// no collision if distance to projected less than radius
-		if (dist > radius)
-			return false;
-		
-		// set incident vector (parallel with line normal)
-		incVect.set(cpx, cpy, ppx, ppy);
-		incVect.setLength(radius - dist);
-		
-		// FIXME: Incident point is incorrect.
-		
-		// distance from incident point to projected point.
-		double ipdist = Math.sqrt(radius * radius - (radius - dist) * (radius - dist));
-		
-		incPoint.set(ppx, ppy);
-		cache.vector.set(line.pointA.x, line.pointB.y, ppx, ppy);
-		cache.vector.setLength(ipdist);
-		
-		incPoint.add(cache.vector);
-		
-		return true;
+
+		double dotp = RMath.getVectorUnitDotProduct(line.pointB.x - line.pointA.x, line.pointB.y - line.pointA.y, line.pointB.x - cpx, line.pointB.y - cpy);
+
+		// line ends at circle center.
+		if (Double.isNaN(dotp))
+		{
+			// set incident vector (parallel with line normal)
+			incVect.set(cpx, cpy, line.pointA.x, line.pointA.y);
+			incVect.setLength(radius);
+			
+			cache.point.set(cpx, cpy);
+			cache.point.add(incVect);
+			
+			incPoint.set(cache.point);
+
+			return true;
+		}
+		// line ends before circle center.
+		else if (dotp < 0)
+		{
+			if (RMath.getVectorLength(cpx - line.pointB.x, cpy - line.pointB.y) >= radius)
+				return false;
+			
+			// set incident vector (remainder of center to line endpoint)
+			incVect.set(cpx, cpy, line.pointB.x, line.pointB.y);
+			incVect.setLength(radius - incVect.length());
+			
+			double ppx = cache.point.x;
+			double ppy = cache.point.y;
+			
+			double dist = RMath.getLineLength(cpx, cpy, ppx, ppy);
+
+			// distance from incident point to projected point.
+			double ipdist = Math.sqrt((radius * radius) - (dist * dist));
+
+			cache.vector.set(ppx, ppy, line.pointA.x, line.pointA.y);
+			cache.vector.setLength(ipdist);
+			cache.point.add(cache.vector);
+			incPoint.set(cache.point);
+			
+			return true;
+		}
+		// line ends after circle center.
+		else
+		{
+			double ppx = cache.point.x;
+			double ppy = cache.point.y;
+			
+			double dist = RMath.getLineLength(cpx, cpy, ppx, ppy);
+			
+			// no collision if distance to projected less than radius
+			if (dist > radius)
+				return false;
+			
+			if (dist != 0)
+			{
+				// set incident vector (parallel with line normal)
+				incVect.set(cpx, cpy, ppx, ppy);
+				incVect.setLength(radius - dist);
+
+				// distance from incident point to projected point.
+				double ipdist = Math.sqrt((radius * radius) - (dist * dist));
+				
+				cache.vector.set(ppx, ppy, line.pointA.x, line.pointA.y);
+				cache.vector.setLength(ipdist);
+				cache.point.add(cache.vector);
+				incPoint.set(cache.point);
+				
+				return true;
+			}
+			else
+			{
+				// set incident vector (parallel with line normal)
+				incVect.set(-(line.pointB.y - line.pointA.y), line.pointB.x - line.pointA.x);
+				incVect.setLength(radius - dist);
+
+				// distance from incident point to projected point.
+				double ipdist = Math.sqrt((radius * radius) - (dist * dist));
+				
+				cache.vector.set(ppx, ppy, line.pointA.x, line.pointA.y);
+				cache.vector.setLength(ipdist);
+				cache.point.add(cache.vector);
+				incPoint.set(cache.point);
+				
+				return true;
+			}
+		}
 	}
 
 	/**
