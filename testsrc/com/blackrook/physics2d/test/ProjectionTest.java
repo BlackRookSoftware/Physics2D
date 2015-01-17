@@ -216,7 +216,7 @@ public class ProjectionTest {
 			if (shape instanceof Circle)
 				Physics2DUtils.projectCircle(model, (Circle)shape, body, normal, proj);
 			else if (shape instanceof Box2D)
-				Physics2DUtils.projectAABB(model, (Box2D)shape, body, normal, proj);
+				Physics2DUtils.projectBox(model, (Box2D)shape, body, normal, proj);
 			else if (shape instanceof Polygon)
 				Physics2DUtils.projectPolygon(model, (Polygon)shape, body, normal, proj);
 			time = System.nanoTime() - time;
@@ -228,7 +228,7 @@ public class ProjectionTest {
 			if (shape instanceof Circle)
 				Physics2DUtils.projectCircle(model, (Circle)shape, body2, normal, proj2);
 			else if (shape instanceof Box2D)
-				Physics2DUtils.projectAABB(model, (Box2D)shape, body2, normal, proj2);
+				Physics2DUtils.projectBox(model, (Box2D)shape, body2, normal, proj2);
 			else if (shape instanceof Polygon)
 				Physics2DUtils.projectPolygon(model, (Polygon)shape, body2, normal, proj2);
 			time = System.nanoTime() - time;

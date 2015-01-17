@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.blackrook.physics2d;
 
+import java.awt.LinearGradientPaint;
+
 import com.blackrook.commons.Common;
 import com.blackrook.commons.ResettableIterator;
 import com.blackrook.commons.hash.Hash;
@@ -863,8 +865,6 @@ public final class Physics2DUtils
 			}
 		}
 		
-		// FIXME: Incident point/vector is incorrect.
-		
 		if (firstCollision)
 		{
 			if (secondCollision)
@@ -888,10 +888,15 @@ public final class Physics2DUtils
 			}
 			
 			// calculate incident vector.
+			
 			cache.vector.set(line.pointA, line.pointB);
 			cache.vector.leftNormal();
-			projectAABB(model, body, collision.target, cache.vector, cache.lineA);
-			//test
+			projectBox(model, body, collision.target, cache.vector, cache.lineA);
+			
+			if (RMath.getVectorLengthSquared(cache.lineA.pointA.x, cache.lineA.pointA.y) < RMath.getVectorLengthSquared(cache.lineA.pointB.x, cache.lineA.pointB.y))
+				incVect.set(cache.lineA.pointA.x, cache.lineA.pointA.y);
+			else
+				incVect.set(cache.lineA.pointB.x, cache.lineA.pointB.y);
 			
 			return true;
 		}
@@ -949,7 +954,7 @@ public final class Physics2DUtils
 		Shape2D shape = model.getObjectCollisionShape(body2d);
 		
 		if (shape instanceof Box2D)
-			projectAABB(model, (Box2D)shape, body2d, axis, out);
+			projectBox(model, (Box2D)shape, body2d, axis, out);
 		else if (shape instanceof Circle)
 			projectCircle(model, (Circle)shape, body2d, axis, out);
 		else if (shape instanceof Polygon)
@@ -1007,7 +1012,7 @@ public final class Physics2DUtils
 	}
 
 	/** Project AABB */
-	public static <T> void projectAABB(Physics2DModel<T> model, Box2D aabb, T body2d, Vect2D axis, Line2D out)
+	public static <T> void projectBox(Physics2DModel<T> model, Box2D aabb, T body2d, Vect2D axis, Line2D out)
 	{
 		Cache cache = getCache();
 		
@@ -1183,14 +1188,14 @@ public final class Physics2DUtils
 		else
 		{
 			if (shapeA instanceof Box2D)
-				cacheSeparatingAxesAABB(model, bodyA);
+				cacheSeparatingAxesBox(model, bodyA);
 			else if (shapeA instanceof Polygon)
 				cacheSeparatingAxesPolygon(model, bodyA);
 	
 			if (shapeB instanceof Circle)
 				cacheSeparatingAxesCircle(model, bodyB, bodyA);
 			else if (shapeB instanceof Box2D)
-				cacheSeparatingAxesAABB(model, bodyB);
+				cacheSeparatingAxesBox(model, bodyB);
 			else if (shapeB instanceof Polygon)
 				cacheSeparatingAxesPolygon(model, bodyB);
 		}
@@ -1227,7 +1232,7 @@ public final class Physics2DUtils
 	}
 	
 	/** Caches the separating axes for an AABB. */
-	private static <T> void cacheSeparatingAxesAABB(Physics2DModel<T> model, T body)
+	private static <T> void cacheSeparatingAxesBox(Physics2DModel<T> model, T body)
 	{
 		Cache cache = getCache();
 		
@@ -1370,7 +1375,7 @@ public final class Physics2DUtils
 		return false;
 	}
 
-	/** Test if two lines intersect and sets the incident point. */
+	/** Test if two lines intersect and sets the incident point p. */
 	private static boolean test2DSegments(Point2D p, double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy)
 	{
 		double a1 = signedTriangleArea(ax, ay, bx, by, dx, dy);
@@ -1385,11 +1390,9 @@ public final class Physics2DUtils
 			if (a3 * a4 < 0.0)
 			{
 				double t = a3 / (a3 - a4);
-				double tx = Math.cos(t);
-				double ty = Math.sin(t);
 	
-				p.x = ax + tx * (bx - ax);
-				p.y = ay + ty * (by - ay);
+				p.x = ax + t * (bx - ax);
+				p.y = ay + t * (by - ay);
 	
 				return true;
 			}

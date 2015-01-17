@@ -254,7 +254,7 @@ public class Test {
 			if (shape instanceof Circle)
 				Physics2DUtils.projectCircle(model, (Circle)shape, c2d.source, normal, proj);
 			else if (shape instanceof Box2D)
-				Physics2DUtils.projectAABB(model, (Box2D)shape, c2d.source, normal, proj);
+				Physics2DUtils.projectBox(model, (Box2D)shape, c2d.source, normal, proj);
 			else if (shape instanceof Polygon)
 				Physics2DUtils.projectPolygon(model, (Polygon)shape, c2d.source, normal, proj);
 			
@@ -263,7 +263,7 @@ public class Test {
 			if (shape instanceof Circle)
 				Physics2DUtils.projectCircle(model, (Circle)shape, c2d.target, normal, proj2);
 			else if (shape instanceof Box2D)
-				Physics2DUtils.projectAABB(model, (Box2D)shape, c2d.target, normal, proj2);
+				Physics2DUtils.projectBox(model, (Box2D)shape, c2d.target, normal, proj2);
 			else if (shape instanceof Polygon)
 				Physics2DUtils.projectPolygon(model, (Polygon)shape, c2d.target, normal, proj2);
 			repaint();
