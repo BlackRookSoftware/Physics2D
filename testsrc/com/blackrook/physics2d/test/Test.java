@@ -12,6 +12,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
@@ -36,33 +38,33 @@ public class Test {
 	public static Collision2D<CollisionBody> c2d;
 	public static CollisionBody cbSrc;
 	public static CollisionBody cbTarg;
+	public static int srcIndex;
+	public static int targIndex;
 	public static CollisionModel model = new CollisionModel(); 
 	static final Logger logger = LoggingFactory.createConsoleLoggerFor(Test.class);
 
-	
+	public static final Shape2D[] shapes = {
+		new Circle(50),
+		new Box2D(50, 50),
+		new Polygon(new Point2D[]{
+			new Point2D(-40,  15),
+			new Point2D(0,    40),
+			new Point2D(40,   15),
+			new Point2D(20,  -40),
+			new Point2D(-20, -40),
+		}),
+		new Polygon(new Point2D[]{
+			new Point2D(-20, 20),
+			new Point2D(20, 20),
+			new Point2D(20, -20),
+			new Point2D(-20, -20)
+		})
+	}; 
+
 	public static void main(String[] args)
 	{
-		Shape2D[] shapes = {
-			new Circle(50),
-			new Box2D(50, 50),
-			new Box2D(25, 25),
-			new Polygon(new Point2D[]{
-				new Point2D(-40,  15),
-				new Point2D(0,    40),
-				new Point2D(40,   15),
-				new Point2D(20,  -40),
-				new Point2D(-20, -40),
-			}),
-			new Polygon(new Point2D[]{
-				new Point2D(-20, 20),
-				new Point2D(20, 20),
-				new Point2D(20, -20),
-				new Point2D(-20, -20)
-			})
-		};
-		
-		cbSrc = new CollisionBody(shapes[0]);
-		cbTarg = new CollisionBody(shapes[0]);
+		cbSrc = new CollisionBody(shapes[srcIndex]);
+		cbTarg = new CollisionBody(shapes[targIndex]);
 		
 		c2d = new Collision2D<CollisionBody>();
 		c2d.source = cbSrc;
@@ -82,7 +84,7 @@ public class Test {
 		return out;
 	}
 
-	private static class TestCanvas extends Canvas implements MouseInputListener
+	private static class TestCanvas extends Canvas implements MouseInputListener, KeyListener
 	{
 		private static final long serialVersionUID = -7369670472224047283L;
 		
@@ -92,7 +94,8 @@ public class Test {
 		Vect2D normal;
 		Point2D tp1;
 		Point2D tp2;
-		Vect2D tv;
+		Vect2D tv1;
+		Vect2D tv2;
 		BufferedImage bi;
 		
 		TestCanvas(Collision2D<CollisionBody> c2d)
@@ -103,17 +106,19 @@ public class Test {
 			normal = new Vect2D();
 			tp1 = new Point2D();
 			tp2 = new Point2D();
-			tv = new Vect2D();
+			tv1 = new Vect2D();
+			tv2 = new Vect2D();
 			setPreferredSize(new Dimension(640,480));
 			addMouseMotionListener(this);
 			addMouseListener(this);
+			addKeyListener(this);
 			tc();
 		}
 		
 		public void tc()
 		{
 			long n = System.nanoTime();
-			boolean b = Physics2DUtils.testCollision(model, c2d, cbSrc, cbTarg);
+			boolean b = Physics2DUtils.testCollision(c2d, model, cbSrc, cbTarg);
 			c2d.calcNanos = System.nanoTime() - n;
 			logger.info(b+" "+"IV: "+c2d.incidentVector+" IP: "+c2d.incidentPoint+" "+c2d.method+" AXES: "+c2d.axisCount+" "+c2d.calcNanos+"ns");
 		}
@@ -141,16 +146,16 @@ public class Test {
 			shape = model.getObjectCollisionShape(c2d.source);
 			rotationZ = model.getObjectCollisionRotationZ(c2d.source);
 			model.getObjectCollisionCenter(c2d.source, tp1);
-			model.getObjectCollisionVelocity(c2d.source, tv);
+			model.getObjectCollisionVelocity(c2d.source, tv1);
 			g2d.setColor(Color.GREEN);
-			drawShape(g2d, shape, tp1.x, tp1.y, tv.x, tv.y, rotationZ);
+			drawShape(g2d, shape, tp1.x, tp1.y, tv1.x, tv1.y, rotationZ);
 			
-			shape = model.getObjectCollisionShape(c2d.source);
-			rotationZ = model.getObjectCollisionRotationZ(c2d.source);
-			model.getObjectCollisionCenter(c2d.source, tp1);
-			model.getObjectCollisionVelocity(c2d.source, tv);
+			shape = model.getObjectCollisionShape(c2d.target);
+			rotationZ = model.getObjectCollisionRotationZ(c2d.target);
+			model.getObjectCollisionCenter(c2d.target, tp2);
+			model.getObjectCollisionVelocity(c2d.target, tv2);
 			g2d.setColor(Color.RED);
-			drawShape(g2d, shape, tp1.x, tp1.y, tv.x, tv.y, rotationZ);
+			drawShape(g2d, shape, tp2.x, tp2.y, tv2.x, tv2.y, rotationZ);
 			
 			g2d.setColor(Color.WHITE);
 			drawIncident(g2d, c2d);
@@ -236,7 +241,7 @@ public class Test {
 
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			CollisionBody b = cbSrc;
+			CollisionBody b = cbTarg;
 			b.x = e.getX()-(getWidth()/2);
 			b.y = -(e.getY()-(getHeight()/2));
 			tc();
@@ -270,25 +275,57 @@ public class Test {
 		}
 
 		@Override
-		public void mouseClicked(MouseEvent e){
+		public void mouseClicked(MouseEvent e)
+		{
 		}
 
 		@Override
-		public void mouseEntered(MouseEvent e) {
+		public void mouseEntered(MouseEvent e)
+		{
 		}
 
 		@Override
-		public void mouseExited(MouseEvent e) {
+		public void mouseExited(MouseEvent e) 
+		{
 		}
 
 		@Override
-		public void mousePressed(MouseEvent e) {
+		public void mousePressed(MouseEvent e)
+		{
 		}
 
 		@Override
-		public void mouseReleased(MouseEvent e) {
+		public void mouseReleased(MouseEvent e)
+		{
 		}
 		
+		@Override
+		public void keyPressed(KeyEvent e)
+		{
+			if (e.getKeyCode() == KeyEvent.VK_S)
+			{
+				srcIndex = (srcIndex + 1) % shapes.length;
+				cbSrc.shape = shapes[srcIndex];
+			}
+			else if (e.getKeyCode() == KeyEvent.VK_T)
+			{
+				targIndex = (targIndex + 1) % shapes.length;
+				cbTarg.shape = shapes[targIndex];
+			}
+			tc();
+			repaint();
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e)
+		{
+		}
+		
+		@Override
+		public void keyTyped(KeyEvent e)
+		{
+		}
+
 	}
 
 }

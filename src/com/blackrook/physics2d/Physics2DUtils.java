@@ -150,13 +150,13 @@ public final class Physics2DUtils
 	/**
 	 * Tests a collision between two bodies.
 	 * Sets the source and the target on the collision object.
-	 * @param model the physics model to use for object attributes.
 	 * @param collision the collision data object.
+	 * @param model the physics model to use for object attributes.
 	 * @param bodyA the first body.
 	 * @param bodyB the second body.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testCollision(Physics2DModel<T> model, Collision2D<T> collision, T bodyA, T bodyB)
+	public static <T> boolean testCollision(Collision2D<T> collision, Physics2DModel<T> model, T bodyA, T bodyB)
 	{
 		long time = System.nanoTime();
 		boolean collide = false;
@@ -176,18 +176,18 @@ public final class Physics2DUtils
 			if (shapeA instanceof Circle)
 			{
 				if (shapeB instanceof Circle)
-					collide = testStationaryCollision(model, collision, (Circle)shapeA, (Circle)shapeB);
+					collide = testStationaryCollision(collision, model, (Circle)shapeA, (Circle)shapeB);
 				else if (shapeB instanceof Box2D)
-					collide = testStationaryCollision(model, collision, (Circle)shapeA, (Box2D)shapeB);
+					collide = testStationaryCollision(collision, model, (Circle)shapeA, (Box2D)shapeB);
 				else
 					collide = testSeparatingAxisCollision(model, collision, bodyA, bodyB);
 			}
 			else if (shapeA instanceof Box2D)
 			{
 				if (shapeB instanceof Box2D)
-					collide = testStationaryCollision(model, collision, (Box2D)shapeA, (Box2D)shapeB);
+					collide = testStationaryCollision(collision, model, (Box2D)shapeA, (Box2D)shapeB);
 				else if (shapeB instanceof Circle)
-					collide = testStationaryCollision(model, collision, (Box2D)shapeA, (Circle)shapeB);
+					collide = testStationaryCollision(collision, model, (Box2D)shapeA, (Circle)shapeB);
 				else
 					collide = testSeparatingAxisCollision(model, collision, bodyA, bodyB);
 			}
@@ -208,63 +208,15 @@ public final class Physics2DUtils
 	}
 	
 	/**
-	 * Tests a raycasting collision on a body.
-	 * The direction of the ray influences the incident point.
-	 * Sets only the target on the collision object.
-	 * @param model the physics model to use for object attributes.
-	 * @param collision the collision data object.
-	 * @param line the line for intersection.
-	 * @param body the test body.
-	 * @return true if a collision occurs shapes collide, false otherwise.
-	 */
-	public static <T> boolean testRaycastCollision(Physics2DModel<T> model, Collision2D<T> collision, Line2D line, T body)
-	{
-		collision.method = Method.SEPARATING_AXIS;
-		
-		long time = System.nanoTime();
-		boolean collide = false;
-		
-		collision.source = null;
-		collision.target = body;
-		collision.axisCount = 0;
-		collision.incidentPoint.set(0, 0);
-		collision.incidentVector.set(0, 0);
-		
-		// use better models for known shapes.
-		if (!checkSweep(model, body))
-		{
-			Shape2D shape = model.getObjectCollisionShape(body);
-			
-			if (shape instanceof Circle)
-				collide = testRaycastStationaryCollision(model, collision, line, (Circle)shape);
-			else if (shape instanceof Box2D)
-				collide = testRaycastStationaryCollision(model, collision, line, (Box2D)shape);
-			else if (shape instanceof Polygon)
-				collide = testRaycastStationaryCollision(model, collision, line, (Polygon)shape);
-			else
-				collide = testRaycastSeparatingAxisCollision(model, collision, line, body);
-		}
-		// use other model.
-		else
-		{
-			collide = testRaycastSeparatingAxisCollision(model, collision, line, body);
-		}
-		
-		collision.calcNanos = System.nanoTime() - time;
-		
-		return collide;
-	}
-	
-	/**
 	 * Tests if two shapes collide. Circle vs. Circle.
 	 * Sets the source and the target on the collision object.
+	 * @param collision the collision data object. source and target should already be set.
 	 * @param model the collision model to use.
 	 * @param source the source shape.
 	 * @param target the target shape.
-	 * @param collision the collision data object. source and target should already be set.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Circle source, Circle target)
+	public static <T> boolean testStationaryCollision(Collision2D<T> collision, Physics2DModel<T> model, Circle source, Circle target)
 	{
 		collision.method = Method.CIRCLE_TO_CIRCLE;
 		
@@ -300,13 +252,13 @@ public final class Physics2DUtils
 	/**
 	 * Tests if two shapes collide. Circle vs. Box.
 	 * Sets the source and the target on the collision object.
+	 * @param collision the collision data object. source and target should already be set.
 	 * @param model the collision model to use.
 	 * @param source the source shape.
 	 * @param target the target shape.
-	 * @param collision the collision data object. source and target should already be set.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Circle source, Box2D target)
+	public static <T> boolean testStationaryCollision(Collision2D<T> collision, Physics2DModel<T> model, Circle source, Box2D target)
 	{
 		collision.method = Method.CIRCLE_TO_BOX;
 	
@@ -400,12 +352,12 @@ public final class Physics2DUtils
 	/**
 	 * Tests if two shapes collide. Box vs. Circle.
 	 * Sets the source and the target on the collision object.
+	 * @param collision the collision data object. source and target should already be set.
 	 * @param source the source shape.
 	 * @param target the target shape.
-	 * @param collision the collision data object. source and target should already be set.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Box2D source, Circle target)
+	public static <T> boolean testStationaryCollision(Collision2D<T> collision, Physics2DModel<T> model, Box2D source, Circle target)
 	{
 		collision.method = Method.BOX_TO_CIRCLE;
 	
@@ -513,12 +465,12 @@ public final class Physics2DUtils
 	/**
 	 * Tests if two shapes collide. AABB vs. AABB.
 	 * Sets the source and the target on the collision object.
+	 * @param collision the collision data object. source and target should already be set.
 	 * @param source the source shape.
 	 * @param target the target shape.
-	 * @param collision the collision data object. source and target should already be set.
 	 * @return true if the shapes collide, false otherwise.
 	 */
-	public static <T> boolean testStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Box2D source, Box2D target)
+	public static <T> boolean testStationaryCollision(Collision2D<T> collision, Physics2DModel<T> model, Box2D source, Box2D target)
 	{
 		collision.method = Method.BOX_TO_BOX;
 	
@@ -654,16 +606,64 @@ public final class Physics2DUtils
 	}
 
 	/**
-	 * Tests a raycasting collision on a stationary circle.
+	 * Tests a raycasting collision on a body.
 	 * The direction of the ray influences the incident point.
 	 * Sets only the target on the collision object.
+	 * @param collision the collision data object.
 	 * @param model the physics model to use for object attributes.
-	 * @param collision the collision data object. source and target should already be set.
 	 * @param line the line for intersection.
 	 * @param body the test body.
 	 * @return true if a collision occurs shapes collide, false otherwise.
 	 */
-	public static <T> boolean testRaycastStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Line2D line, Circle body)
+	public static <T> boolean testRaycastCollision(Collision2D<T> collision, Physics2DModel<T> model, Line2D line, T body)
+	{
+		collision.method = Method.SEPARATING_AXIS;
+		
+		long time = System.nanoTime();
+		boolean collide = false;
+		
+		collision.source = null;
+		collision.target = body;
+		collision.axisCount = 0;
+		collision.incidentPoint.set(0, 0);
+		collision.incidentVector.set(0, 0);
+		
+		// use better models for known shapes.
+		if (!checkSweep(model, body))
+		{
+			Shape2D shape = model.getObjectCollisionShape(body);
+			
+			if (shape instanceof Circle)
+				collide = testRaycastStationaryCollision(collision, model, line, (Circle)shape);
+			else if (shape instanceof Box2D)
+				collide = testRaycastStationaryCollision(collision, model, line, (Box2D)shape);
+			else if (shape instanceof Polygon)
+				collide = testRaycastStationaryCollision(collision, model, line, (Polygon)shape);
+			else
+				collide = testRaycastSeparatingAxisCollision(model, collision, line, body);
+		}
+		// use other model.
+		else
+		{
+			collide = testRaycastSeparatingAxisCollision(model, collision, line, body);
+		}
+		
+		collision.calcNanos = System.nanoTime() - time;
+		
+		return collide;
+	}
+
+	/**
+	 * Tests a raycasting collision on a stationary circle.
+	 * The direction of the ray influences the incident point.
+	 * Sets only the target on the collision object.
+	 * @param collision the collision data object. source and target should already be set.
+	 * @param model the physics model to use for object attributes.
+	 * @param line the line for intersection.
+	 * @param body the test body.
+	 * @return true if a collision occurs shapes collide, false otherwise.
+	 */
+	public static <T> boolean testRaycastStationaryCollision(Collision2D<T> collision, Physics2DModel<T> model, Line2D line, Circle body)
 	{
 		collision.method = Method.LINE_TO_CIRCLE;
 		
@@ -782,13 +782,13 @@ public final class Physics2DUtils
 	 * Tests a raycasting collision on a stationary bounding box.
 	 * The direction of the ray influences the incident point.
 	 * Sets only the target on the collision object.
-	 * @param model the physics model to use for object attributes.
 	 * @param collision the collision data object. source and target should already be set.
+	 * @param model the physics model to use for object attributes.
 	 * @param line the line for intersection.
 	 * @param body the test body.
 	 * @return true if a collision occurs shapes collide, false otherwise.
 	 */
-	public static <T> boolean testRaycastStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Line2D line, Box2D body)
+	public static <T> boolean testRaycastStationaryCollision(Collision2D<T> collision, Physics2DModel<T> model, Line2D line, Box2D body)
 	{
 		collision.method = Method.LINE_TO_BOX;
 		
@@ -912,13 +912,13 @@ public final class Physics2DUtils
 	 * Tests a raycasting collision on a stationary polygon.
 	 * The direction of the ray influences the incident point.
 	 * Sets only the target on the collision object.
-	 * @param model the physics model to use for object attributes.
 	 * @param collision the collision data object. source and target should already be set.
+	 * @param model the physics model to use for object attributes.
 	 * @param line the line for intersection.
 	 * @param body the test body.
 	 * @return true if a collision occurs shapes collide, false otherwise.
 	 */
-	public static <T> boolean testRaycastStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Line2D line, Polygon body)
+	public static <T> boolean testRaycastStationaryCollision(Collision2D<T> collision, Physics2DModel<T> model, Line2D line, Polygon body)
 	{
 		collision.method = Method.LINE_TO_POLYGON;
 		

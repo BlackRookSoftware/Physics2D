@@ -40,7 +40,9 @@ public class RaycastTest {
 	public static int targIndex;
 	public static CollisionModel model = new CollisionModel(); 
 	static final Logger logger = LoggingFactory.createConsoleLoggerFor(RaycastTest.class);
-	public static final Shape2D[] shapes = {
+	
+	public static final Shape2D[] shapes =
+	{
 		new Circle(50),
 		new Box2D(50, 50),
 		new Polygon(new Point2D[]{
@@ -104,7 +106,7 @@ public class RaycastTest {
 		public void tc()
 		{
 			long n = System.nanoTime();
-			boolean b = Physics2DUtils.testRaycastCollision(model, c2d, line, cbTarg);
+			boolean b = Physics2DUtils.testRaycastCollision(c2d, model, line, cbTarg);
 			
 			//if (b) { cbTarg.x -= c2d.incidentVector.x; cbTarg.y -= c2d.incidentVector.y; }
 			
@@ -135,7 +137,6 @@ public class RaycastTest {
 			g2d.setColor(Color.GRAY);
 			drawScan(g2d, line);
 
-			g2d.setColor(Color.WHITE);
 			drawIncident(g2d, c2d);
 			g2d.dispose();
 		}
@@ -159,9 +160,11 @@ public class RaycastTest {
 			int ix1 = (int)(x+c2d.incidentPoint.x+c2d.incidentVector.x);
 			int iy0 = (int)(y+c2d.incidentPoint.y);
 			int iy1 = (int)(y+c2d.incidentPoint.y+c2d.incidentVector.y);
+			g2d.setColor(Color.WHITE);
 			g2d.drawLine(ix0, iy0, ix1, iy1);
 			g2d.fillOval((int)(c2d.incidentPoint.x-2+x), (int)(c2d.incidentPoint.y-2+y), 4, 4);
-
+			g2d.setColor(Color.GREEN);
+			g2d.drawLine((int)x, (int)y, ix0, iy0);
 		}
 		
 		public void drawShape(Graphics2D g2d, Shape2D s, double x, double y, double vx, double vy, double rotation)
@@ -249,13 +252,6 @@ public class RaycastTest {
 		}
 
 		@Override
-		public void keyTyped(KeyEvent e)
-		{
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
 		public void keyPressed(KeyEvent e)
 		{
 			if (e.getKeyCode() == KeyEvent.VK_SPACE)
@@ -263,15 +259,20 @@ public class RaycastTest {
 				targIndex = (targIndex + 1) % shapes.length;
 				cbTarg.shape = shapes[targIndex];
 			}
+			tc();
+			repaint();
 		}
 
 		@Override
 		public void keyReleased(KeyEvent e)
 		{
-			// TODO Auto-generated method stub
-			
 		}
 		
+		@Override
+		public void keyTyped(KeyEvent e)
+		{
+		}
+
 	}
 
 }

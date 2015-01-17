@@ -12,7 +12,7 @@ import com.blackrook.commons.math.geometry.Point2D;
 import com.blackrook.commons.math.geometry.Vect2D;
 
 /**
- * This model the defines how objects intersect with each other.  
+ * This model defines how objects intersect with each other.  
  * @author Matthew Tropiano
  */
 public interface Physics2DModel<T extends Object>

@@ -36,7 +36,7 @@ public class CollisionModel implements Physics2DModel<CollisionBody>
 	@Override
 	public void getObjectCollisionVelocity(CollisionBody object, Vect2D velocity)
 	{
-		velocity.set(object.x, object.y);
+		velocity.set(object.vx, object.vy);
 	}
 
 	@Override
