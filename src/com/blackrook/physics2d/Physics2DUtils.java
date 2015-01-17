@@ -7,8 +7,6 @@
  ******************************************************************************/
 package com.blackrook.physics2d;
 
-import java.awt.LinearGradientPaint;
-
 import com.blackrook.commons.Common;
 import com.blackrook.commons.ResettableIterator;
 import com.blackrook.commons.hash.Hash;
@@ -916,8 +914,95 @@ public final class Physics2DUtils
 	 */
 	public static <T> boolean testRaycastStationaryCollision(Physics2DModel<T> model, Collision2D<T> collision, Line2D line, Polygon body)
 	{
-		// TODO: Finish this.
-		return false;
+		collision.method = Method.LINE_TO_POLYGON;
+		
+		Vect2D incVect = collision.incidentVector;
+		Point2D incPoint = collision.incidentPoint;
+		
+		Cache cache = getCache();
+		model.getObjectCollisionCenter(collision.target, cache.point);
+		double cpx = cache.point.x;
+		double cpy = cache.point.y;
+
+		// intersection incident points.
+		double ipx1 = 0.0;
+		double ipy1 = 0.0;
+		double ipx2 = 0.0;
+		double ipy2 = 0.0;
+		
+		// A line crossing through a convex shape can - at most - bisect two sides.
+		// These points are the incident, but the closest to the line start is the incident point recorded.
+		boolean firstCollision = false;
+		boolean secondCollision = false;
+		
+		Point2D[] points = body.getPoints();
+		
+		for (int i = 0; i < points.length && !(firstCollision && secondCollision); i++)
+		{
+			double sx, sy, tx, ty;
+			
+			// set line points for intersection test.
+			sx = cpx + points[i].x;
+			sy = cpy + points[i].y;
+			int p = (i + 1) % points.length;
+			tx = cpx + points[p].x;
+			ty = cpy + points[p].y;
+			
+			boolean intersect = test2DSegments(cache.point, line.pointA.x, line.pointA.y, line.pointB.x, line.pointB.y, sx, sy, tx, ty);
+			if (intersect)
+			{
+				if (!firstCollision)
+				{
+					firstCollision = true;
+					ipx1 = cache.point.x;
+					ipy1 = cache.point.y;
+				}
+				else
+				{
+					secondCollision = true;
+					ipx2 = cache.point.x;
+					ipy2 = cache.point.y;
+				}
+			}
+		}
+		
+		if (firstCollision)
+		{
+			if (secondCollision)
+			{
+				// what is closer to the line start?
+				if (RMath.getLineLengthSquared(ipx1, ipy1, line.pointA.x, line.pointA.y) < RMath.getLineLengthSquared(ipx2, ipy2, line.pointA.x, line.pointA.y))
+				{
+					incPoint.x = ipx1;
+					incPoint.y = ipy1;
+				}
+				else
+				{
+					incPoint.x = ipx2;
+					incPoint.y = ipy2;
+				}
+			}
+			else
+			{
+				incPoint.x = ipx1;
+				incPoint.y = ipy1;
+			}
+			
+			// calculate incident vector.
+			
+			cache.vector.set(line.pointA, line.pointB);
+			cache.vector.leftNormal();
+			projectPolygon(model, body, collision.target, cache.vector, cache.lineA);
+			
+			if (RMath.getVectorLengthSquared(cache.lineA.pointA.x, cache.lineA.pointA.y) < RMath.getVectorLengthSquared(cache.lineA.pointB.x, cache.lineA.pointB.y))
+				incVect.set(cache.lineA.pointA.x, cache.lineA.pointA.y);
+			else
+				incVect.set(cache.lineA.pointB.x, cache.lineA.pointB.y);
+			
+			return true;
+		}
+		else
+			return false;
 	}
 
 	/**
