@@ -806,6 +806,10 @@ public final class Physics2DUtils
 		double ipx2 = 0.0;
 		double ipy2 = 0.0;
 		
+		// intersection normal (1, 0) horizontal or (0, 1) vertical.
+		// only considered if only one collision.
+		boolean hnorm = false;
+		
 		// A line crossing through a convex shape can - at most - bisect two sides.
 		// These points are the incident, but the closest to the line start is the incident point recorded.
 		boolean firstCollision = false;
@@ -813,6 +817,7 @@ public final class Physics2DUtils
 		
 		for (int i = 0; i < 4 && !(firstCollision && secondCollision); i++)
 		{
+			boolean hn;
 			double sx, sy, tx, ty;
 			
 			switch (i)
@@ -824,24 +829,28 @@ public final class Physics2DUtils
 					sy = cpy - body.getHalfHeight();
 					tx = cpx + body.getHalfWidth();
 					ty = cpy - body.getHalfHeight();
+					hn = true;
 					break;
 				case 1:
 					sx = cpx - body.getHalfWidth();
 					sy = cpy - body.getHalfHeight();
 					tx = cpx - body.getHalfWidth();
 					ty = cpy + body.getHalfHeight();
+					hn = false;
 					break;
 				case 2:
 					sx = cpx - body.getHalfWidth();
 					sy = cpy + body.getHalfHeight();
 					tx = cpx + body.getHalfWidth();
 					ty = cpy + body.getHalfHeight();
+					hn = true;
 					break;
 				case 3:
 					sx = cpx + body.getHalfWidth();
 					sy = cpy - body.getHalfHeight();
 					tx = cpx + body.getHalfWidth();
 					ty = cpy + body.getHalfHeight();
+					hn = false;
 					break;
 			}
 			
@@ -853,6 +862,7 @@ public final class Physics2DUtils
 					firstCollision = true;
 					ipx1 = cache.point.x;
 					ipy1 = cache.point.y;
+					hnorm = hn;
 				}
 				else
 				{
@@ -867,35 +877,31 @@ public final class Physics2DUtils
 		{
 			if (secondCollision)
 			{
-				// what is closer to the line start?
-				if (RMath.getLineLengthSquared(ipx1, ipy1, line.pointA.x, line.pointA.y) < RMath.getLineLengthSquared(ipx2, ipy2, line.pointA.x, line.pointA.y))
-				{
-					incPoint.x = ipx1;
-					incPoint.y = ipy1;
-				}
-				else
-				{
-					incPoint.x = ipx2;
-					incPoint.y = ipy2;
-				}
+				testRaycastGetProjectedIncident(model, collision, line, incVect, incPoint, ipx1, ipy1, false, ipx2, ipy2);
 			}
 			else
 			{
-				incPoint.x = ipx1;
-				incPoint.y = ipy1;
+				// use "dot product" incident.
+				double dotp = RMath.getVectorUnitDotProduct(line.pointB.x - line.pointA.x, line.pointB.y - line.pointA.y, line.pointB.x - cpx, line.pointB.y - cpy);
+
+				if (dotp < 0.0)
+				{
+					incPoint.x = ipx1;
+					incPoint.y = ipy1;
+
+					if (hnorm) // vertical
+						incVect.set(0, incPoint.y - line.pointB.y);
+					else // horizontal
+					{
+						incVect.set(incPoint.x - line.pointB.x , 0);
+					}					
+				}
+				else
+				{
+					testRaycastGetProjectedIncident(model, collision, line, incVect, incPoint, ipx1, ipy1, true, ipx2, ipy2);
+				}
+				
 			}
-			
-			// calculate incident vector.
-			
-			cache.vector.set(line.pointA, line.pointB);
-			cache.vector.leftNormal();
-			projectBox(model, body, collision.target, cache.vector, cache.lineA);
-			
-			if (RMath.getVectorLengthSquared(cache.lineA.pointA.x, cache.lineA.pointA.y) < RMath.getVectorLengthSquared(cache.lineA.pointB.x, cache.lineA.pointB.y))
-				incVect.set(cache.lineA.pointA.x, cache.lineA.pointA.y);
-			else
-				incVect.set(cache.lineA.pointB.x, cache.lineA.pointB.y);
-			
 			return true;
 		}
 		else
@@ -929,6 +935,10 @@ public final class Physics2DUtils
 		double ipy1 = 0.0;
 		double ipx2 = 0.0;
 		double ipy2 = 0.0;
+
+		// first intersection normals.
+		double ipx1n = 0.0;
+		double ipy1n = 0.0;
 		
 		// A line crossing through a convex shape can - at most - bisect two sides.
 		// These points are the incident, but the closest to the line start is the incident point recorded.
@@ -956,6 +966,8 @@ public final class Physics2DUtils
 					firstCollision = true;
 					ipx1 = cache.point.x;
 					ipy1 = cache.point.y;
+					ipx1n = - (points[p].y - points[i].y); 
+					ipy1n = points[p].x - points[i].x; 
 				}
 				else
 				{
@@ -970,35 +982,33 @@ public final class Physics2DUtils
 		{
 			if (secondCollision)
 			{
-				// what is closer to the line start?
-				if (RMath.getLineLengthSquared(ipx1, ipy1, line.pointA.x, line.pointA.y) < RMath.getLineLengthSquared(ipx2, ipy2, line.pointA.x, line.pointA.y))
-				{
-					incPoint.x = ipx1;
-					incPoint.y = ipy1;
-				}
-				else
-				{
-					incPoint.x = ipx2;
-					incPoint.y = ipy2;
-				}
+				testRaycastGetProjectedIncident(model, collision, line, incVect, incPoint, ipx1, ipy1, false, ipx2, ipy2);
 			}
 			else
 			{
-				incPoint.x = ipx1;
-				incPoint.y = ipy1;
+				// use "dot product" incident.
+				double dotp = RMath.getVectorUnitDotProduct(line.pointB.x - line.pointA.x, line.pointB.y - line.pointA.y, line.pointB.x - cpx, line.pointB.y - cpy);
+
+				if (dotp < 0.0)
+				{
+					// this incident vector is incorrect.
+					incPoint.x = ipx1;
+					incPoint.y = ipy1;
+					
+					cache.vector.set(ipx1n, ipy1n);
+					cache.lineA.pointA.set(line.pointB);
+					cache.lineA.pointB.set(ipx1, ipy1);
+					cache.lineA.pointA.projectOnto(cache.vector);
+					cache.lineA.pointB.projectOnto(cache.vector);
+					
+					incVect.set(cache.lineA.pointA, cache.lineA.pointB);
+				}
+				else
+				{
+					testRaycastGetProjectedIncident(model, collision, line, incVect, incPoint, ipx1, ipy1, true, ipx2, ipy2);
+				}
+				
 			}
-			
-			// calculate incident vector.
-			
-			cache.vector.set(line.pointA, line.pointB);
-			cache.vector.leftNormal();
-			projectPolygon(model, body, collision.target, cache.vector, cache.lineA);
-			
-			if (RMath.getVectorLengthSquared(cache.lineA.pointA.x, cache.lineA.pointA.y) < RMath.getVectorLengthSquared(cache.lineA.pointB.x, cache.lineA.pointB.y))
-				incVect.set(cache.lineA.pointA.x, cache.lineA.pointA.y);
-			else
-				incVect.set(cache.lineA.pointB.x, cache.lineA.pointB.y);
-			
 			return true;
 		}
 		else
@@ -1359,6 +1369,52 @@ public final class Physics2DUtils
 	private static double signedTriangleArea(double ax, double ay, double bx, double by, double cx, double cy)
 	{
 		return (ax - cx) * (by - cy) - (ay - cy) * (bx - cx);
+	}
+
+	/**
+	 * 
+	 * @param model the physics model to use for object attributes.
+	 * @param collision the collision data object. target should already be set.
+	 * @param line the line for intersection.
+	 * @param incVect output incident vector.
+	 * @param incPoint output incident point.
+	 * @param ipx1 first incident point, x-component.
+	 * @param ipy1 first incident point, y-component.
+	 * @param ignore2 if true, ignore 2nd incident.
+	 * @param ipx2 second incident point, x-component.
+	 * @param ipy2 second incident point, y-component.
+	 */
+	private static <T> void testRaycastGetProjectedIncident(Physics2DModel<T> model, Collision2D<T> collision, Line2D line, Vect2D incVect, Point2D incPoint, double ipx1, double ipy1, boolean ignore2, double ipx2, double ipy2)
+	{
+		if (!ignore2)
+		{
+			// what is closer to the line start?
+			if (RMath.getLineLengthSquared(ipx1, ipy1, line.pointA.x, line.pointA.y) < RMath.getLineLengthSquared(ipx2, ipy2, line.pointA.x, line.pointA.y))
+			{
+				incPoint.x = ipx1;
+				incPoint.y = ipy1;
+			}
+			else
+			{
+				incPoint.x = ipx2;
+				incPoint.y = ipy2;
+			}
+		}
+		else
+		{
+			incPoint.x = ipx1;
+			incPoint.y = ipy1;
+		}
+	
+		Cache cache = getCache();
+		cache.vector.set(line.pointA, line.pointB);
+		cache.vector.leftNormal();
+		projectShape2D(model, collision.target, cache.vector, cache.lineA);
+		
+		if (RMath.getVectorLengthSquared(cache.lineA.pointA.x, cache.lineA.pointA.y) < RMath.getVectorLengthSquared(cache.lineA.pointB.x, cache.lineA.pointB.y))
+			incVect.set(cache.lineA.pointA.x, cache.lineA.pointA.y);
+		else
+			incVect.set(cache.lineA.pointB.x, cache.lineA.pointB.y);
 	}
 
 	/**
