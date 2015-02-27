@@ -121,20 +121,20 @@ public class ProjectionTest {
 			g2d.translate(0, -getHeight());
 			g2d.fillRect(0, 0, getWidth(), getHeight());
 			
-			double rotationZ = model.getObjectCollisionRotationZ(body);
-			model.getObjectCollisionCenter(body, tp1);
-			model.getObjectCollisionVelocity(body, tv);
+			double rotationZ = model.getRotationZ(body);
+			model.getCenter(body, tp1);
+			model.getVelocity(body, tv);
 			g2d.setColor(Color.GREEN);
-			drawShape(g2d, model.getObjectCollisionShape(body), tp1.x, tp1.y, tv.x, tv.y, rotationZ);
+			drawShape(g2d, model.getShape(body), tp1.x, tp1.y, tv.x, tv.y, rotationZ);
 
 			g2d.setColor(Color.WHITE);
 			drawProjection(g2d, proj.pointA, proj.pointB);
 
-			rotationZ = model.getObjectCollisionRotationZ(body2);
-			model.getObjectCollisionCenter(body2, tp1);
-			model.getObjectCollisionVelocity(body2, tv);
+			rotationZ = model.getRotationZ(body2);
+			model.getCenter(body2, tp1);
+			model.getVelocity(body2, tv);
 			g2d.setColor(Color.GREEN);
-			drawShape(g2d, model.getObjectCollisionShape(body2), tp1.x, tp1.y, tv.x, tv.y, rotationZ);
+			drawShape(g2d, model.getShape(body2), tp1.x, tp1.y, tv.x, tv.y, rotationZ);
 			
 			g2d.setColor(Color.WHITE);
 			drawProjection(g2d, proj2.pointA, proj2.pointB);
@@ -211,7 +211,7 @@ public class ProjectionTest {
 			
 			time = System.nanoTime();
 			
-			Shape2D shape = model.getObjectCollisionShape(body);
+			Shape2D shape = model.getShape(body);
 			
 			if (shape instanceof Circle)
 				Physics2DUtils.projectCircle(model, (Circle)shape, body, normal, proj);
@@ -222,7 +222,7 @@ public class ProjectionTest {
 			time = System.nanoTime() - time;
 			logger.info(time + "ns ");
 			
-			shape = model.getObjectCollisionShape(body2);
+			shape = model.getShape(body2);
 
 			time = System.nanoTime();
 			if (shape instanceof Circle)

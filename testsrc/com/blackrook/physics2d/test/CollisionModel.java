@@ -22,61 +22,61 @@ public class CollisionModel implements Physics2DModel<CollisionBody>
 	}
 
 	@Override
-	public void getObjectCollisionCenter(CollisionBody object, Point2D center)
+	public void getCenter(CollisionBody object, Point2D center)
 	{
 		center.set(object.x, object.y);
 	}
 
 	@Override
-	public void getObjectCollisionHalfWidths(CollisionBody object, Tuple2D halfwidths)
+	public void getHalfWidths(CollisionBody object, Tuple2D halfwidths)
 	{
 		halfwidths.set(object.shape.getHalfWidth(), object.shape.getHalfHeight());
 	}
 
 	@Override
-	public void getObjectCollisionVelocity(CollisionBody object, Vect2D velocity)
+	public void getVelocity(CollisionBody object, Vect2D velocity)
 	{
 		velocity.set(object.vx, object.vy);
 	}
 
 	@Override
-	public boolean isObjectInMotion(CollisionBody object)
+	public boolean isInMotion(CollisionBody object)
 	{
 		return object.vx != 0.0 || object.vy != 0.0;
 	}
 
 	@Override
-	public double getObjectCollisionSquaredRadius(CollisionBody object)
+	public double getSquaredRadius(CollisionBody object)
 	{
 		return object.shape.getHalfWidth() * object.shape.getHalfWidth() + object.shape.getHalfHeight() * object.shape.getHalfHeight();
 	}
 
 	@Override
-	public double getObjectCollisionRotationZ(CollisionBody object)
+	public double getRotationZ(CollisionBody object)
 	{
 		return object.rotation;
 	}
 
 	@Override
-	public long getObjectCollisionGroupMask(CollisionBody object)
+	public long getGroupMask(CollisionBody object)
 	{
 		return -1L;
 	}
 
 	@Override
-	public long getObjectCollisionTargetMask(CollisionBody object)
+	public long getTargetMask(CollisionBody object)
 	{
 		return -1L;
 	}
 
 	@Override
-	public Shape2D getObjectCollisionShape(CollisionBody object)
+	public Shape2D getShape(CollisionBody object)
 	{
 		return object.shape;
 	}
 
 	@Override
-	public boolean isObjectExcludedFromCollision(CollisionBody object)
+	public boolean isExcludedFromCollision(CollisionBody object)
 	{
 		return false;
 	}

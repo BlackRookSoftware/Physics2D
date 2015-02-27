@@ -170,8 +170,8 @@ public final class Physics2DUtils
 		// use better models for known shapes.
 		if (!checkSweep(model, bodyA) && !checkSweep(model, bodyB))
 		{
-			Shape2D shapeA = model.getObjectCollisionShape(bodyA);
-			Shape2D shapeB = model.getObjectCollisionShape(bodyB);
+			Shape2D shapeA = model.getShape(bodyA);
+			Shape2D shapeB = model.getShape(bodyB);
 			
 			if (shapeA instanceof Circle)
 			{
@@ -222,11 +222,11 @@ public final class Physics2DUtils
 		
 		Cache cache = getCache();
 
-		model.getObjectCollisionCenter(collision.source, cache.point);
+		model.getCenter(collision.source, cache.point);
 		double spx = cache.point.x;
 		double spy = cache.point.y;
 		
-		model.getObjectCollisionCenter(collision.target, cache.point);
+		model.getCenter(collision.target, cache.point);
 		double tpx = cache.point.x;
 		double tpy = cache.point.y;
 
@@ -264,17 +264,17 @@ public final class Physics2DUtils
 	
 		Cache cache = getCache();
 
-		model.getObjectCollisionCenter(collision.source, cache.point);
+		model.getCenter(collision.source, cache.point);
 		double spx = cache.point.x;
 		double spy = cache.point.y;
 		
-		model.getObjectCollisionCenter(collision.target, cache.point);
+		model.getCenter(collision.target, cache.point);
 		double tx0 = cache.point.x;
 		double tx1 = cache.point.x;
 		double ty0 = cache.point.y;
 		double ty1 = cache.point.y;
 
-		model.getObjectCollisionHalfWidths(collision.target, cache.point);
+		model.getHalfWidths(collision.target, cache.point);
 		tx0 -= cache.point.x; 
 		tx1 += cache.point.x; 
 		ty0 -= cache.point.y; 
@@ -314,7 +314,7 @@ public final class Physics2DUtils
 				double closeX = closerComponent(spx, tx0, tx1);
 				double closeY = closerComponent(spy, ty0, ty1);
 				
-				model.getObjectCollisionCenter(collision.target, cache.point); 
+				model.getCenter(collision.target, cache.point); 
 				
 				if (closeX < closeY)
 				{
@@ -363,17 +363,17 @@ public final class Physics2DUtils
 	
 		Cache cache = getCache();
 
-		model.getObjectCollisionCenter(collision.target, cache.point);
+		model.getCenter(collision.target, cache.point);
 		double cpx = cache.point.x;
 		double cpy = cache.point.y;
 		
-		model.getObjectCollisionCenter(collision.source, cache.point);
+		model.getCenter(collision.source, cache.point);
 		double bx0 = cache.point.x;
 		double bx1 = cache.point.x;
 		double by0 = cache.point.y;
 		double by1 = cache.point.y;
 
-		model.getObjectCollisionHalfWidths(collision.source, cache.point);
+		model.getHalfWidths(collision.source, cache.point);
 		bx0 -= cache.point.x; 
 		bx1 += cache.point.x; 
 		by0 -= cache.point.y; 
@@ -425,7 +425,7 @@ public final class Physics2DUtils
 			{
 				double closeX = closerComponent(cpx, bx0, bx1);
 				double closeY = closerComponent(cpy, by0, by1);
-				model.getObjectCollisionCenter(collision.source, cache.point);
+				model.getCenter(collision.source, cache.point);
 
 				if (closeX < closeY)
 				{
@@ -479,19 +479,19 @@ public final class Physics2DUtils
 		
 		Cache cache = getCache();
 		
-		model.getObjectCollisionCenter(collision.source, cache.point);
+		model.getCenter(collision.source, cache.point);
 		double spx = cache.point.x;
 		double spy = cache.point.y;
 
-		model.getObjectCollisionHalfWidths(collision.source, cache.point);
+		model.getHalfWidths(collision.source, cache.point);
 		double shw = cache.point.x;
 		double shh = cache.point.y;
 
-		model.getObjectCollisionCenter(collision.target, cache.point);
+		model.getCenter(collision.target, cache.point);
 		double tpx = cache.point.x;
 		double tpy = cache.point.y;
 		
-		model.getObjectCollisionHalfWidths(collision.target, cache.point);
+		model.getHalfWidths(collision.target, cache.point);
 		double thw = cache.point.x;
 		double thh = cache.point.y;
 
@@ -631,7 +631,7 @@ public final class Physics2DUtils
 		// use better models for known shapes.
 		if (!checkSweep(model, body))
 		{
-			Shape2D shape = model.getObjectCollisionShape(body);
+			Shape2D shape = model.getShape(body);
 			
 			if (shape instanceof Circle)
 				collide = testRaycastStationaryCollision(collision, model, line, (Circle)shape);
@@ -672,7 +672,7 @@ public final class Physics2DUtils
 		
 		Cache cache = getCache();
 				
-		model.getObjectCollisionCenter(collision.target, cache.point);
+		model.getCenter(collision.target, cache.point);
 		double cpx = cache.point.x;
 		double cpy = cache.point.y;
 		
@@ -796,7 +796,7 @@ public final class Physics2DUtils
 		Point2D incPoint = collision.incidentPoint;
 		
 		Cache cache = getCache();
-		model.getObjectCollisionCenter(collision.target, cache.point);
+		model.getCenter(collision.target, cache.point);
 		double cpx = cache.point.x;
 		double cpy = cache.point.y;
 
@@ -926,7 +926,7 @@ public final class Physics2DUtils
 		Point2D incPoint = collision.incidentPoint;
 		
 		Cache cache = getCache();
-		model.getObjectCollisionCenter(collision.target, cache.point);
+		model.getCenter(collision.target, cache.point);
 		double cpx = cache.point.x;
 		double cpy = cache.point.y;
 
@@ -1046,7 +1046,7 @@ public final class Physics2DUtils
 	 */
 	public static <T> void projectShape2D(Physics2DModel<T> model, T body2d, Vect2D axis, Line2D out)
 	{
-		Shape2D shape = model.getObjectCollisionShape(body2d);
+		Shape2D shape = model.getShape(body2d);
 		
 		if (shape instanceof Box2D)
 			projectBox(model, (Box2D)shape, body2d, axis, out);
@@ -1061,7 +1061,7 @@ public final class Physics2DUtils
 	{
 		Cache cache = getCache();
 		
-		model.getObjectCollisionCenter(body2d, cache.point);
+		model.getCenter(body2d, cache.point);
 		
 		double ox = cache.point.x;
 		double oy = cache.point.y;
@@ -1111,7 +1111,7 @@ public final class Physics2DUtils
 	{
 		Cache cache = getCache();
 		
-		model.getObjectCollisionCenter(body2d, cache.point);
+		model.getCenter(body2d, cache.point);
 
 		double ox = cache.point.x;
 		double oy = cache.point.y;
@@ -1169,7 +1169,7 @@ public final class Physics2DUtils
 
 		Cache cache = getCache();
 	
-		model.getObjectCollisionCenter(body2d, cache.point); 
+		model.getCenter(body2d, cache.point); 
 		
 		double bcx = cache.point.x;
 		double bcy = cache.point.y;
@@ -1178,7 +1178,7 @@ public final class Physics2DUtils
 		{
 			cache.point.set(p.x, p.y);
 			
-			double rotationZ = model.getObjectCollisionRotationZ(body2d);
+			double rotationZ = model.getRotationZ(body2d);
 			
 			if (rotationZ != 0.0)
 				cache.point.rotateZ(RMath.degToRad(rotationZ));
@@ -1223,14 +1223,14 @@ public final class Physics2DUtils
 	/** Checks if this object is swept or not. */
 	public static <T> boolean checkSweep(Physics2DModel<T> model, T body2d)
 	{
-		return model.isObjectInMotion(body2d);
+		return model.isInMotion(body2d);
 	}
 
 	/** Adjust for sweep (velocity). */
 	public static <T> void sweepAdjust(Physics2DModel<T> model, T body2d, Vect2D axis, Line2D out)
 	{
 		Cache cache = getCache();
-		model.getObjectCollisionVelocity(body2d, cache.vector);
+		model.getVelocity(body2d, cache.vector);
 		cache.vector.projectOnto(axis);
 	
 		boolean swap = axis.x < 0 ^ axis.y < 0;
@@ -1272,8 +1272,8 @@ public final class Physics2DUtils
 	/** Caches the separating axes for a set of collision bodies. */
 	private static <T> void cacheSeparatingAxes(Physics2DModel<T> model, T bodyA, T bodyB)
 	{
-		Shape2D shapeA = model.getObjectCollisionShape(bodyA);
-		Shape2D shapeB = model.getObjectCollisionShape(bodyB);
+		Shape2D shapeA = model.getShape(bodyA);
+		Shape2D shapeB = model.getShape(bodyB);
 		
 		Cache cache = getCache();
 		cache.axisReset();
@@ -1301,10 +1301,10 @@ public final class Physics2DUtils
 	{
 		Cache cache = getCache();
 		
-		model.getObjectCollisionCenter(body, cache.point); 
+		model.getCenter(body, cache.point); 
 		double bcx = cache.point.x;
 		double bcy = cache.point.y;
-		model.getObjectCollisionCenter(otherBody, cache.point); 
+		model.getCenter(otherBody, cache.point); 
 		double ocx = cache.point.x;
 		double ocy = cache.point.y;
 		
@@ -1314,7 +1314,7 @@ public final class Physics2DUtils
 		// add axes for movement.
 		if (checkSweep(model, body))
 		{
-			model.getObjectCollisionVelocity(body, cache.vector); 
+			model.getVelocity(body, cache.vector); 
 			double bvx = cache.vector.x;
 			double bvy = cache.vector.y;
 			
@@ -1338,7 +1338,7 @@ public final class Physics2DUtils
 		// add axes for movement.
 		if (checkSweep(model, body))
 		{
-			model.getObjectCollisionVelocity(body, cache.vector); 
+			model.getVelocity(body, cache.vector); 
 			// velocity normals
 			cache.addAxis(-cache.vector.y, cache.vector.x);
 		}
@@ -1351,14 +1351,14 @@ public final class Physics2DUtils
 		Cache cache = getCache();
 		
 		// add polygonal normals.
-		Polygon polygon = (Polygon)model.getObjectCollisionShape(body);
+		Polygon polygon = (Polygon)model.getShape(body);
 		for (Vect2D normal : polygon.getNormals())
-			cache.addAxisRotated(normal.x, normal.y, model.getObjectCollisionRotationZ(body));
+			cache.addAxisRotated(normal.x, normal.y, model.getRotationZ(body));
 		
 		// add axes for movement.
 		if (checkSweep(model, body))
 		{
-			model.getObjectCollisionVelocity(body, cache.vector); 
+			model.getVelocity(body, cache.vector); 
 			// velocity normals
 			cache.addAxis(-cache.vector.y, cache.vector.x);
 		}

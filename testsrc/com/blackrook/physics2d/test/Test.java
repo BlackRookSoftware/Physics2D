@@ -143,17 +143,17 @@ public class Test {
 			Shape2D shape;
 			double rotationZ;
 			
-			shape = model.getObjectCollisionShape(c2d.source);
-			rotationZ = model.getObjectCollisionRotationZ(c2d.source);
-			model.getObjectCollisionCenter(c2d.source, tp1);
-			model.getObjectCollisionVelocity(c2d.source, tv1);
+			shape = model.getShape(c2d.source);
+			rotationZ = model.getRotationZ(c2d.source);
+			model.getCenter(c2d.source, tp1);
+			model.getVelocity(c2d.source, tv1);
 			g2d.setColor(Color.GREEN);
 			drawShape(g2d, shape, tp1.x, tp1.y, tv1.x, tv1.y, rotationZ);
 			
-			shape = model.getObjectCollisionShape(c2d.target);
-			rotationZ = model.getObjectCollisionRotationZ(c2d.target);
-			model.getObjectCollisionCenter(c2d.target, tp2);
-			model.getObjectCollisionVelocity(c2d.target, tv2);
+			shape = model.getShape(c2d.target);
+			rotationZ = model.getRotationZ(c2d.target);
+			model.getCenter(c2d.target, tp2);
+			model.getVelocity(c2d.target, tv2);
 			g2d.setColor(Color.RED);
 			drawShape(g2d, shape, tp2.x, tp2.y, tv2.x, tv2.y, rotationZ);
 			
@@ -254,7 +254,7 @@ public class Test {
 			normal.y = -(e.getY()-(getHeight()/2));
 			normal.normalize();
 			
-			Shape2D shape = model.getObjectCollisionShape(c2d.source);
+			Shape2D shape = model.getShape(c2d.source);
 
 			if (shape instanceof Circle)
 				Physics2DUtils.projectCircle(model, (Circle)shape, c2d.source, normal, proj);
@@ -263,7 +263,7 @@ public class Test {
 			else if (shape instanceof Polygon)
 				Physics2DUtils.projectPolygon(model, (Polygon)shape, c2d.source, normal, proj);
 			
-			shape = model.getObjectCollisionShape(c2d.target);
+			shape = model.getShape(c2d.target);
 
 			if (shape instanceof Circle)
 				Physics2DUtils.projectCircle(model, (Circle)shape, c2d.target, normal, proj2);
