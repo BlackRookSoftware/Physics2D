@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Black Rook Software
+ * Copyright (c) 2014 - 2015 Black Rook Software
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
@@ -23,6 +23,7 @@ import com.blackrook.commons.logging.LoggingFactory;
 import com.blackrook.commons.math.RMath;
 import com.blackrook.commons.math.geometry.Line2D;
 import com.blackrook.commons.math.geometry.Point2D;
+import com.blackrook.commons.math.geometry.Point3D;
 import com.blackrook.commons.math.geometry.Vect2D;
 import com.blackrook.physics2d.Physics2DUtils;
 import com.blackrook.physics2d.Shape2D;
@@ -85,6 +86,7 @@ public class ProjectionTest {
 		Vect2D normal;
 		Point2D tp1;
 		Point2D tp2;
+		Point3D t3d;
 		Vect2D tv;
 		BufferedImage bi;
 
@@ -98,6 +100,7 @@ public class ProjectionTest {
 			normal = new Vect2D();
 			tp1 = new Point2D();
 			tp2 = new Point2D();
+			t3d = new Point3D();
 			tv = new Vect2D();
 			setPreferredSize(new Dimension(640,480));
 			addMouseMotionListener(this);
@@ -121,20 +124,22 @@ public class ProjectionTest {
 			g2d.translate(0, -getHeight());
 			g2d.fillRect(0, 0, getWidth(), getHeight());
 			
-			double rotationZ = model.getRotationZ(body);
-			model.getCenter(body, tp1);
-			model.getVelocity(body, tv);
+			model.getCollisionRotation(body, t3d);
+			double rotationZ = t3d.z;
+			model.getCollisionCenter(body, tp1);
+			model.getCollisionVelocity(body, tv);
 			g2d.setColor(Color.GREEN);
-			drawShape(g2d, model.getShape(body), tp1.x, tp1.y, tv.x, tv.y, rotationZ);
+			drawShape(g2d, model.getCollisionShape(body), tp1.x, tp1.y, tv.x, tv.y, rotationZ);
 
 			g2d.setColor(Color.WHITE);
 			drawProjection(g2d, proj.pointA, proj.pointB);
 
-			rotationZ = model.getRotationZ(body2);
-			model.getCenter(body2, tp1);
-			model.getVelocity(body2, tv);
+			model.getCollisionRotation(body2, t3d);
+			rotationZ = t3d.z;
+			model.getCollisionCenter(body2, tp1);
+			model.getCollisionVelocity(body2, tv);
 			g2d.setColor(Color.GREEN);
-			drawShape(g2d, model.getShape(body2), tp1.x, tp1.y, tv.x, tv.y, rotationZ);
+			drawShape(g2d, model.getCollisionShape(body2), tp1.x, tp1.y, tv.x, tv.y, rotationZ);
 			
 			g2d.setColor(Color.WHITE);
 			drawProjection(g2d, proj2.pointA, proj2.pointB);
@@ -211,7 +216,7 @@ public class ProjectionTest {
 			
 			time = System.nanoTime();
 			
-			Shape2D shape = model.getShape(body);
+			Shape2D shape = model.getCollisionShape(body);
 			
 			if (shape instanceof Circle)
 				Physics2DUtils.projectCircle(model, (Circle)shape, body, normal, proj);
@@ -222,7 +227,7 @@ public class ProjectionTest {
 			time = System.nanoTime() - time;
 			logger.info(time + "ns ");
 			
-			shape = model.getShape(body2);
+			shape = model.getCollisionShape(body2);
 
 			time = System.nanoTime();
 			if (shape instanceof Circle)

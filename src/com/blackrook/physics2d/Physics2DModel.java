@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Black Rook Software
+ * Copyright (c) 2014 - 2015 Black Rook Software
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
@@ -8,6 +8,7 @@
 package com.blackrook.physics2d;
 
 import com.blackrook.commons.math.Tuple2D;
+import com.blackrook.commons.math.Tuple3D;
 import com.blackrook.commons.math.geometry.Point2D;
 import com.blackrook.commons.math.geometry.Vect2D;
 
@@ -25,25 +26,25 @@ public interface Physics2DModel<T extends Object>
 	/**
 	 * Gets an object's centerpoint.
 	 */
-	public void getCenter(T object, Point2D center);
+	public void getCollisionCenter(T object, Point2D center);
 	
 	/**
 	 * Gets an object's half-widths for its BOUNDING area.
 	 * This area is used for broadphase collision detection, and may not represent the object's actual collision zone!
 	 */
-	public void getHalfWidths(T object, Tuple2D halfwidths);
+	public void getCollisionHalfWidths(T object, Tuple2D halfwidths);
 	
 	/**
 	 * Gets the velocity of this body along the X-axis.
 	 * This also influences collision along separating axes and incident vectors.
 	 * The cumulative area is used for broadphase collision detection, and may not represent the object's actual collision zone!
 	 */
-	public void getVelocity(T object, Vect2D velocity);
+	public void getCollisionVelocity(T object, Vect2D velocity);
 
 	/**
 	 * Gets if an object is in motion, usually because its velocity is nonzero.
 	 */
-	public boolean isInMotion(T object);
+	public boolean isCollisionInMotion(T object);
 
 	/**
 	 * Gets the object's squared radius, eliminating a 
@@ -54,15 +55,14 @@ public interface Physics2DModel<T extends Object>
 	 * is not always used - it is used if the object's useRadius() 
 	 * function returns true, which leaves it in the hands of the implementor.
 	 */
-	public double getSquaredRadius(T object);
+	public double getCollisionSquaredRadius(T object);
 
 	/**
 	 * Gets the rotation of this body around the Z-axis.
 	 * This also influences collision along separating axes and incident vectors.
 	 * This may not have an impact on different shapes like Boxes and Circles.
-	 * @return the rotation from the base positioning in degrees.
 	 */
-	public double getRotationZ(T object);
+	public void getCollisionRotation(T object, Tuple3D rotation);
 
 	/**
 	 * Returns the group mask of this object (what my type is).
@@ -75,7 +75,7 @@ public interface Physics2DModel<T extends Object>
 	 * <br>A mask of 0 is no type, and collides with nothing.
 	 * <p>This is one of the many ways to exclude an object from collision detection.
 	 */
-	public long getGroupMask(T object);
+	public long getCollisionGroupMask(T object);
 
 	/**
 	 * Returns the target mask of this object (what can I collide with?).
@@ -88,14 +88,14 @@ public interface Physics2DModel<T extends Object>
 	 * <br>A mask of 0 collides with nothing.
 	 * <p>This is one of the many ways to exclude an object from collision detection.
 	 */
-	public long getTargetMask(T object);
+	public long getCollisionTargetMask(T object);
 
 	/** 
 	 * Returns the internal shape to use for this body.
 	 * If this returns null, this object is eliminated from collision detection. 
 	 * <p>This is one of the many ways to exclude an object from collision detection.
 	 */
-	public Shape2D getShape(T object);
+	public Shape2D getCollisionShape(T object);
 
 	/**
 	 * Returns true if this object is to be excluded from collision detection entirely,
