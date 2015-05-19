@@ -1521,27 +1521,14 @@ public final class Physics2DUtils
 	/** Test if two lines intersect and sets the incident point p. */
 	private static boolean test2DSegments(Point2D p, double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy)
 	{
-		double a1 = RMath.getTriangleAreaDoubleSigned(ax, ay, bx, by, dx, dy);
-		double a2 = RMath.getTriangleAreaDoubleSigned(ax, ay, bx, by, cx, cy);
-		
-		// If the triangle areas have opposite signs. 
-		if (a1 != 0.0 && a2 != 0.0 && a1 * a2 < 0.0)
+		double t = RMath.getLineSegmentIntersection(ax, ay, bx, by, cx, cy, dx, dy);
+		if (!Double.isNaN(t))
 		{
-			double a3 = RMath.getTriangleAreaDoubleSigned(cx, cy, dx, dy, ax, ay);
-			double a4 = a3 + a2 - a1;
-			
-			if (a3 * a4 < 0.0)
-			{
-				double t = a3 / (a3 - a4);
-	
-				p.x = ax + t * (bx - ax);
-				p.y = ay + t * (by - ay);
-	
-				return true;
-			}
+			RMath.getIntersectionPoint(p, ax, ay, bx, by, t);
+			return true;
 		}
-		
-		return false;
+		else
+			return false;
 	}
 	
 }
