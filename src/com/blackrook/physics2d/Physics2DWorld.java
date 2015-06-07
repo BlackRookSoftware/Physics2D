@@ -32,11 +32,14 @@ public interface Physics2DWorld<T extends Object>
 
 	/**
 	 * Returns a set of objects that can potentially intersect with a straight line.
-	 * @param object the object to test for intersecting.
+	 * @param x0 the beginning point of the line, x-coordinate.
+	 * @param y0 the beginning point of the line, y-coordinate.
+	 * @param x1 the ending point of the line, x-coordinate.
+	 * @param y1 the ending point of the line, y-coordinate.
 	 * @param outArray the output array.
 	 * @param offset the starting offset into the array. 
 	 * @return the amount of objects returned. 
 	 */
-	public int getPotentialRaycastIntersections(T object, Object[] outArray, int offset);
+	public int getPotentialRaycastIntersections(double x0, double y0, double x1, double y1, Object[] outArray, int offset);
 
 }
