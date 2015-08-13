@@ -1521,7 +1521,7 @@ public final class Physics2DUtils
 	/** Test if two lines intersect and sets the incident point p. */
 	private static boolean test2DSegments(Point2D p, double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy)
 	{
-		double t = RMath.getLineSegmentIntersection(ax, ay, bx, by, cx, cy, dx, dy);
+		double t = RMath.getIntersectionLineSegment(ax, ay, bx, by, cx, cy, dx, dy);
 		if (!Double.isNaN(t))
 		{
 			RMath.getIntersectionPoint(p, ax, ay, bx, by, t);
