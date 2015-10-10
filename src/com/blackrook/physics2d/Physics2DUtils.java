@@ -49,13 +49,6 @@ public final class Physics2DUtils
 		/** Temp 3D Point. */
 		private final Point3D point3d; 
 
-		/** Point iterator. */
-		private ResettableIterator<Point2D> pointIterator;
-		/** Points. */
-		private List<Point2D> points;
-		/** Point count. */
-		private int pointCount;
-		
 		/** Separating axis iterator. */
 		private ResettableIterator<Vect2D> axisIterator;
 		/** Separating axes. */
@@ -76,9 +69,6 @@ public final class Physics2DUtils
 			axes = new List<Vect2D>();
 			axisCount = 0;
 			axisIterator = axes.iterator();
-			points = new List<Point2D>();
-			pointCount = 0;
-			pointIterator = points.iterator();
 			angleHash = new Hash<Double>();
 		}
 		
@@ -109,20 +99,6 @@ public final class Physics2DUtils
 			axisCount++;
 		}
 
-		private void pointReset()
-		{
-			pointCount = 0;
-		}
-		
-		private void addPoint(double x, double y)
-		{
-			if (pointCount >= points.size())
-				points.add(new Point2D(x, y));
-			else
-				points.getByIndex(pointCount).set(x, y);
-			pointCount++;
-		}
-		
 		private void angleHashReset()
 		{
 			angleHash.clear();
@@ -875,25 +851,6 @@ public final class Physics2DUtils
 			collision.incidentVector.negate();
 		
 		return stillGood;
-	}
-
-	/**
-	 * Sets incident vectors and points if a collision occurs between
-	 * AABBs and Circles.
-	 */
-	private static boolean testAABBCircleIncidents(Vect2D vect, Point2D point, 
-		double targradius, double bx, double by, double cx, double cy)
-	{
-		double dist = RMath.getLineLength(cx, cy, bx, by);
-		if (dist < targradius)
-		{
-			double theta = RMath.getVectorAngleRadians(bx - cx, by - cy);
-			vect.set(cx - bx, cy - by);
-			vect.setLength(targradius - dist);
-			point.set(targradius * Math.cos(theta) + cx, targradius * Math.sin(theta) + cy);
-			return true;
-		}
-		return false;
 	}
 
 	/** Test if two lines intersect and sets the incident point p. */
