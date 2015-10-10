@@ -58,9 +58,9 @@ public class ProjectionTest {
 			})
 		};
 
-		CollisionBody cb1 = new CollisionBody(shapes[3]);
+		CollisionBody cb1 = new CollisionBody(shapes[0]);
 		cb1.rotation = 45f;
-		CollisionBody cb2 = new CollisionBody(shapes[2]); 
+		CollisionBody cb2 = new CollisionBody(shapes[1]); 
 		makeTestWindow(cb1, cb2, "Test");
 	}
 
