@@ -284,8 +284,7 @@ public final class Physics2DUtils
 	
 		if (RMath.getIntersectionCircleBox(cpx, cpy, targRadius, bcx, bcy, bhw, bhh))
 		{
-			RMath.getOverlapCircleBox(incVect, incPoint, cpx, cpy, targRadius, bcx, bcy, bhw, bhh);
-			incVect.negate();
+			RMath.getOverlapBoxCircle(incVect, incPoint, bcx, bcy, bhw, bhh, cpx, cpy, targRadius);
 			return true;
 		}
 		
